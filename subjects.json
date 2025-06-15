@@ -1,0 +1,27 @@
+{
+    "app": {"firefox": ["firefox","killall firefox"],
+            "godot": ["godot", "killall godot"], 
+            "krita": ["flatpak run org.kde.krita", "flatpak kill org.kde.krita"], 
+            "gimp": ["gimp", "killall gimp"], 
+            "blender": ["blender" ,"killall blender"], 
+            "audacity": ["audacity", "killall audacity"], 
+            "libroffice": ["lowriter", "killall lowriter"], 
+            "unity": ["unityhub", "killall unityhub"], 
+            "github desktop": ["flatpak run io.github.shiftey.Desktop", "flatpak kill io.github.shiftey.Desktop"], 
+            "discord": ["flatpak run com.discordapp.Discord", "flatpak kill com.discordapp.Discord"],
+            "steam": ["steam", "killall steam"], 
+            "cartouche": ["flatpak run page.kramo.Cartridges", "flatpak kill page.kramo.Cartridges"], 
+            "obsidian": ["flatpak run md.obsidian.Obsidian", "flatpak kill md.obsidian.Obsidian"],
+            "ficher": ["nautilus", "killall nautilus"], 
+            "dossier": ["nautilus", "killall nautilus"], 
+            "carte": ["gnome-maps", "killall gnome-maps"],
+            "cartes": ["gnome-maps", "killall gnome-maps"],
+            "météo": ["flatpak run io.github.amit9838.mousam", "flatpak kill io.github.amit9838.mousam"], 
+            "contact": ["gnome-contacts", "killall gnome-contacts"],
+            "contacts": ["gnome-contacts", "killall gnome-contacts"],
+            "agenda": ["gnome-calendar", "killall gnome-calendar"],
+            "l'agenda": ["gnome-calendar", "killall gnome-calendar"],
+            "calendrier": ["gnome-calendar", "killall gnome-calendar"],
+            "calculatrice": ["gnome-calculator", "killall gnome-calculator"]
+        }
+}

@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+vosk-model-fr-0.22/
+
 # C extensions
 *.so
 
