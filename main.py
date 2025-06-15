@@ -18,7 +18,6 @@ name = brain.name
 hotword = brain.hotword
 speaker = brain.speaker
 
-# Pour pouvoir fermer proprement le stream
 stream = None
 thread = None
 
@@ -78,7 +77,6 @@ def main():
             print("🔁 Redémarrage de l'écoute...")
     except KeyboardInterrupt:
         print("\n🛑 Arrêt demandé par l’utilisateur (Ctrl+C).")
-        # Nettoyage
         if stream:
             stream.stop()
             stream.close()

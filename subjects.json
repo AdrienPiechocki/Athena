@@ -45,7 +45,7 @@
             "open": "unityhub",
             "close": "killall unityhub"
         },
-        "github desktop":{
+        "github":{
             "call": "GitHub Desktop",
             "open": "flatpak run io.github.shiftey.Desktop",
             "close": "flatpak kill io.github.shiftey.Desktop"
