@@ -3,9 +3,6 @@ import os
 import datetime
 from Speaker import Speaker
 
-
-
-
 class Brain:
 
     speaker = Speaker()
@@ -30,7 +27,7 @@ class Brain:
             answer = f"il est {t.strftime("%H")} heure {t.strftime("%M")}"
 
         if command == "search":
-            os.system(f'firefox -search "{remaining_text}"')
+            os.system(f'firefox -search "{remaining_text}" &')
             answer = f"je recherche sur internet: {remaining_text}"
 
         print(f"🟢 {answer}")
@@ -40,11 +37,11 @@ class Brain:
         answer = "je n'ai pas compris"
 
         if action == "open":
-            os.system(self.subjects.get("app").get(subject)[0] + " &")
-            answer = f"j'ouvre {subject}"
+            os.system(self.subjects.get("app").get(subject).get("open") + " &")
+            answer = f"j'ouvre {self.subjects.get("app").get(subject).get("call")}"
         if action == "close":
-            os.system(self.subjects.get("app").get(subject)[1])
-            answer = f"je ferme {subject}"
+            os.system(self.subjects.get("app").get(subject).get("close"))
+            answer = f"je ferme {self.subjects.get("app").get(subject).get("call")}"
         
         print(f"🟢 {answer}")
         self.speaker.say(answer)
@@ -61,7 +58,7 @@ class Brain:
             for x in c:
                 if x in input_text:
                     for word in words:
-                        if word == "recherche":
+                        if word in self.actions.get("commands").get("search"):
                             index = words.index(word)+1
                             words = words[index:]
                     self.commander(command, " ".join(words))

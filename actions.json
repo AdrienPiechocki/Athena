@@ -1,10 +1,9 @@
 {
-    "open": ["ouvre", "lance", "démarre"],
-    "close": ["ferme", "arrête"],
+    "open": ["ouvre", "lance", "démarre", "ouvrir", "lancer", "démarrer"],
+    "close": ["ferme", "arrête", "fermer", "arrêter"],
     "commands": {
-        "stop": ["arrête-toi", "ferme toi", "fermeture"],
+        "stop": ["arrête-toi", "arrête toi", "ferme toi", "fermeture"],
         "time": ["quelle heure"],
-        "search": ["recherche"]
-    }
-   
+        "search": ["recherche", "rechercher"]
+    }  
 }
