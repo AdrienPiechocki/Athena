@@ -4,12 +4,12 @@
     "commands": {
         "stop": ["arrête-toi", "arrête toi", "ferme toi", "fermeture"],
         "time": ["quelle heure"],
-        "search": ["cherche", "recherche", "rechercher", "recherches"]
+        "search": ["cherche", "chercher", "cherches", "recherche", "rechercher", "recherches"]
     },
     "search": {
         "youtube": ["youtube"],
         "twitch": ["twitch"],
         "nexus": ["nexus"],
-        "internet": ["duck"]
+        "internet": ["internet"]
     }  
 }

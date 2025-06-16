@@ -30,7 +30,7 @@ class Brain:
             searches = self.actions.get("search").keys()
             words = text.split()
             #get search type:
-            action = "duck"
+            action = "internet"
             for search in searches:
                 s = self.actions.get("search").get(search)
                 for word in words:
@@ -78,7 +78,7 @@ class Brain:
         if action == "nexus":
             os.system(f'firefox https://www.nexusmods.com/search?keyword="{subject}"')
             answer = f"je recherche {subject} sur nexus"
-        if action == "duck":
+        if action == "internet":
             os.system(f'firefox --search "{subject}"')
             answer = f"je recherche {subject} sur internet"
 
