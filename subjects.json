@@ -80,6 +80,11 @@
             "open": "flatpak run md.obsidian.Obsidian",
             "close": "flatpak kill md.obsidian.Obsidian"
         }, 
+        "obsidienne": {
+            "call": "Obsidian",
+            "open": "flatpak run md.obsidian.Obsidian",
+            "close": "flatpak kill md.obsidian.Obsidian"
+        }, 
         "fichier": {
             "call": "les dossiers",
             "open": "nautilus",
