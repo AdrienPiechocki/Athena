@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 vosk-model-fr-0.22/
+Athena.sh
 
 # C extensions
 *.so
