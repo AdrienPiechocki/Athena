@@ -5,7 +5,10 @@ import threading
 import time
 import sys
 from Brain import Brain
-from vosk import Model, KaldiRecognizer
+from vosk import Model, KaldiRecognizer, SetLogLevel
+SetLogLevel(-1)
+
+print("Démarrage...")
 
 model = Model("vosk-model-fr-0.22")
 vosk_rate = 48000
