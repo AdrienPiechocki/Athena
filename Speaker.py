@@ -1,7 +1,7 @@
 import subprocess
 
 class Speaker:
-    def __init__(self, voice="fr", speed=175, pitch=50, volume=100, gap=0):
+    def __init__(self, voice="french-mbrola-4", speed=120, pitch=50, volume=100, gap=0):
         self.voice = voice
         self.speed = str(speed)    # Vitesse (mots/min)
         self.pitch = str(pitch)    # Hauteur de voix
