@@ -47,18 +47,22 @@ class Brain():
     # ---------------------- FONCTIONS ----------------------
 
     def query_ollama(self, prompt):
-        """Envoie une requête à Ollama et récupère la réponse brute."""
-        response = requests.post(self.OLLAMA_API, json={
-            "model": self.MODEL,
-            "prompt": self.SYSTEM_PROMPT + "\n\n" + prompt
-        }, stream=True)
+        try:
+            response = requests.post(self.OLLAMA_API, json={
+                "model": self.MODEL,
+                "prompt": self.SYSTEM_PROMPT + "\n\n" + prompt
+            })
 
-        output = ""
-        for line in response.iter_lines():
-            if line:
-                data = json.loads(line.decode("utf-8"))
-                output += data.get("response", "")
-        return output.strip()
+            if response.status_code != 200:
+                print("Erreur API Ollama :", response.status_code, response.text)
+                return "Erreur lors de la génération de la réponse."
+
+            data = response.json()
+            return data.get("response", "").strip()
+
+        except requests.exceptions.RequestException as e:
+            print("Erreur de connexion à Ollama:", e)
+            return "Erreur de connexion à Ollama."
 
     def run_application(self, app_name):
         called = app_name

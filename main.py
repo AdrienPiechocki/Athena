@@ -61,7 +61,7 @@ def run_session():
 
     print("🎙️ Dites Athéna (Ctrl+C pour arrêter)...")
 
-    stream = sd.RawInputStream(device=8, samplerate=vosk_rate, blocksize=16000, dtype='int16',
+    stream = sd.RawInputStream(samplerate=vosk_rate, blocksize=8000, dtype='int16',
                                channels=1, callback=audio_callback)
     stream.start()
 
