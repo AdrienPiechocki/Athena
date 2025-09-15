@@ -40,12 +40,7 @@ def recognize_loop(recognizer, q):
             result = json.loads(recognizer.Result())
             text = result.get("text", "").strip().lower()
             if text:
-                if not called and hotword in text and len(text.split()) <= 2:
-                    answer = f"Oui {name}?"
-                    print(f"🤖 {answer}")
-                    speaker.say(answer)
-                    called = True
-                elif not called and hotword in text:
+                if not called and hotword in text:
                     print(f"🗣️ {text}")
                     brain.agent_loop(text)
                     called = True

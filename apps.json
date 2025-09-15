@@ -4,9 +4,7 @@
         "godot",
         "blender",
         "audacity",
-        "libreoffice",
         "unityhub",
-        "code",
         "nautilus",
         "gnome-maps",
         "gnome-contacts",
@@ -21,7 +19,8 @@
         "com.valvesoftware.Steam",
         "page.kramo.Cartridges",
         "md.obsidian.Obsidian",
-        "io.github.amit9838.mousam"
+        "io.github.amit9838.mousam",
+        "com.visualstudio.code"
     ],
     
     "ALIASES": {
@@ -42,17 +41,22 @@
         "weather": "io.github.amit9838.mousam",
         "mousam": "io.github.amit9838.mousam",
         "unity": "unityhub",
-        "vscode": "code",
+        "visual studio": "com.visualstudio.code",
+        "visual studio code": "com.visualstudio.code",
+        "code": "com.visualstudio.code",
         "navigateur": "firefox",
         "dossier": "nautilus",
         "dossiers": "nautilus",
-        "éditeur de texte": "libreoffice",
         "carte": "gnome-maps",
         "cartes": "gnome-maps",
+        "map": "gnome-maps",
+        "maps": "gnome-maps",
         "contact": "gnome-contacts",
         "contacts": "gnome-contacts",
         "agenda": "gnome-calendar",
         "calendrier": "gnome-calendar",
-        "calculatrice": "gnome-calculator"
+        "calendad": "gnome-calendar",
+        "calculatrice": "gnome-calculator",
+        "calculator": "gnome-calculator"
     }
 }

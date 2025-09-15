@@ -34,6 +34,7 @@ class Brain():
     ACTION: terminate
     Sinon, réponds normalement et simplement (une phrase ou deux max).
     N'utilise pas d'emojis.
+    /no_think
     """
 
     def __init__(self, apps="apps.json"):
@@ -48,21 +49,35 @@ class Brain():
 
     def query_ollama(self, prompt):
         try:
-            response = requests.post(self.OLLAMA_API, json={
-                "model": self.MODEL,
-                "prompt": self.SYSTEM_PROMPT + "\n\n" + prompt
-            })
+            response = requests.post(
+                self.OLLAMA_API,
+                json={
+                    "model": self.MODEL,
+                    "prompt": self.SYSTEM_PROMPT + "\n\n" + prompt
+                },
+                stream=True  # <-- important
+            )
 
             if response.status_code != 200:
                 print("Erreur API Ollama :", response.status_code, response.text)
                 return "Erreur lors de la génération de la réponse."
 
-            data = response.json()
-            return data.get("response", "").strip()
+            full_response = ""
+            for line in response.iter_lines():
+                if line:
+                    try:
+                        data = json.loads(line.decode("utf-8"))
+                        if "response" in data:
+                            full_response += data["response"]
+                    except json.JSONDecodeError:
+                        continue  # ignore les morceaux non JSON valides
+
+            return full_response.strip()
 
         except requests.exceptions.RequestException as e:
             print("Erreur de connexion à Ollama:", e)
             return "Erreur de connexion à Ollama."
+
 
     def run_application(self, app_name):
         called = app_name
@@ -144,9 +159,15 @@ class Brain():
         cleaned = re.sub(r"<think>.*?</think>", "", ai_response_raw, flags=re.DOTALL)
         return cleaned.strip()
 
+    def format_markdown(self, text: str) -> str:
+        """
+        Transforme *texte* en texte gras avec ANSI.
+        """
+        return re.sub(r"\*(.*?)\*", r"\033[1m\1\033[0m", text)
+
     # ---------------------- BOUCLE PRINCIPALE ----------------------
     def agent_loop(self, user_input:str):
-        result = ""  # <-- initialisation par défaut
+        result = ""  
         ai_response_raw = self.query_ollama(user_input)
         ai_response = self.clean_think(ai_response_raw)
 
@@ -173,7 +194,9 @@ class Brain():
                     result = f"aurevoir {self.name}"
                     self.cancel = True
         else:
-            result = ai_response  # pour tout ce qui n'est pas ACTION
+            result = ai_response  
+
+        result = self.format_markdown(result)
 
         print(f"🤖 {result}")
         self.speaker.say(result)
