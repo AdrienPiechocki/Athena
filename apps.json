@@ -1,0 +1,58 @@
+{
+    "ALLOWED_APPS": [
+        "firefox",
+        "godot",
+        "blender",
+        "audacity",
+        "libreoffice",
+        "unityhub",
+        "code",
+        "nautilus",
+        "gnome-maps",
+        "gnome-contacts",
+        "gnome-calendar",
+        "gnome-calculator"
+    ],
+    "ALLOWED_FLATPAKS": [
+        "org.gimp.GIMP",
+        "org.kde.krita",
+        "io.github.shiftey.Desktop",
+        "com.discordapp.Discord",
+        "com.valvesoftware.Steam",
+        "page.kramo.Cartridges",
+        "md.obsidian.Obsidian",
+        "io.github.amit9838.mousam"
+    ],
+    
+    "ALIASES": {
+        "gimp": "org.gimp.GIMP",
+        "krita":"org.kde.krita",
+        "github desktop":"io.github.shiftey.Desktop",
+        "github":"io.github.shiftey.Desktop",
+        "discord":"com.discordapp.Discord",
+        "discorde":"com.discordapp.Discord",
+        "steam":"com.valvesoftware.Steam",
+        "cartouche":"page.kramo.Cartridges",
+        "cartouches":"page.kramo.Cartridges",
+        "jeux":"page.kramo.Cartridges",
+        "obsidian":"md.obsidian.Obsidian",
+        "obsidienne":"md.obsidian.Obsidian",
+        "météo": "io.github.amit9838.mousam",
+        "meteo": "io.github.amit9838.mousam",
+        "weather": "io.github.amit9838.mousam",
+        "mousam": "io.github.amit9838.mousam",
+        "unity": "unityhub",
+        "vscode": "code",
+        "navigateur": "firefox",
+        "dossier": "nautilus",
+        "dossiers": "nautilus",
+        "éditeur de texte": "libreoffice",
+        "carte": "gnome-maps",
+        "cartes": "gnome-maps",
+        "contact": "gnome-contacts",
+        "contacts": "gnome-contacts",
+        "agenda": "gnome-calendar",
+        "calendrier": "gnome-calendar",
+        "calculatrice": "gnome-calculator"
+    }
+}

@@ -1,7 +1,6 @@
 import sounddevice as sd
 import queue
 import json
-import threading
 import time
 import sys
 from Brain import Brain
@@ -22,7 +21,6 @@ hotword = brain.hotword
 speaker = brain.speaker
 
 stream = None
-thread = None
 
 def audio_callback(indata, frames, time_info, status):
     if status:
@@ -42,36 +40,38 @@ def recognize_loop(recognizer, q):
             result = json.loads(recognizer.Result())
             text = result.get("text", "").strip().lower()
             if text:
-                if not called and hotword in text and len(text.split()) <= 3:
+                if not called and hotword in text and len(text.split()) <= 2:
                     answer = f"Oui {name}?"
-                    print(f"🟢 {answer}")
+                    print(f"🤖 {answer}")
                     speaker.say(answer)
+                    called = True
+                elif not called and hotword in text:
+                    print(f"🗣️ {text}")
+                    brain.agent_loop(text)
                     called = True
                 elif called:
                     print(f"🗣️ {text}")
-                    brain.analyze_question(text)
+                    brain.agent_loop(text)
 
 def run_session():
-    global stream, thread, called
+    global stream, called
     recognizer = KaldiRecognizer(model, vosk_rate)
     called = False
     brain.cancel = False
 
     print("🎙️ Dites Athéna (Ctrl+C pour arrêter)...")
 
-    stream = sd.RawInputStream(samplerate=vosk_rate, blocksize=16000, dtype='int16',
+    stream = sd.RawInputStream(device=8, samplerate=vosk_rate, blocksize=16000, dtype='int16',
                                channels=1, callback=audio_callback)
     stream.start()
 
-    thread = threading.Thread(target=recognize_loop, args=(recognizer, q))
-    thread.start()
+    recognize_loop(recognizer, q)
 
     while not brain.cancel:
         time.sleep(0.1)
 
     stream.stop()
     stream.close()
-    thread.join()
 
 def main():
     try:
@@ -83,9 +83,6 @@ def main():
         if stream:
             stream.stop()
             stream.close()
-        if thread and thread.is_alive():
-            brain.cancel = True
-            thread.join()
         sys.exit(0)
 
 if __name__ == "__main__":
