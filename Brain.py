@@ -24,8 +24,6 @@ class Brain():
     ACTION: run <nom_application_ou_alias>
     - Si l'utilisateur te demande de fermer une application (classique ou flatpak), réponds UNIQUEMENT avec :
     ACTION: close <nom_application_ou_alias>
-    - Si l'utilisateur te demande quelles applications tu peux lancer, réponds UNIQUEMENT avec :
-    ACTION: list_apps
     - Si l'utilisateur te demanque l'heure qu'il est, réponds UNIQUEMENT avec :
     ACTION: time
     - Si l'utilisateur te demanque la date du jour, réponds UNIQUEMENT avec :
@@ -34,7 +32,6 @@ class Brain():
     ACTION: terminate
     Sinon, réponds normalement et simplement (une phrase ou deux max).
     N'utilise pas d'emojis.
-    /no_think
     """
 
     def __init__(self, apps="apps.json"):
@@ -53,7 +50,8 @@ class Brain():
                 self.OLLAMA_API,
                 json={
                     "model": self.MODEL,
-                    "prompt": self.SYSTEM_PROMPT + "\n\n" + prompt
+                    "prompt": self.SYSTEM_PROMPT + "\n\n" + prompt,
+                    "think": False
                 },
                 stream=True  # <-- important
             )
@@ -112,11 +110,6 @@ class Brain():
 
         else:
             return f"Application {called} non autorisée."
-
-    def list_allowed_apps(self):
-        apps = "Applications classiques autorisées:\n- " + "\n- ".join(self.ALLOWED_APPS)
-        flats = "\n\nApplications Flatpak autorisées:\n- " + "\n- ".join(self.ALLOWED_FLATPAKS)
-        return apps + flats
 
     def close_application(self, app_name):
         called = app_name
@@ -184,14 +177,12 @@ class Brain():
                 elif action_type == "close":
                     app_name = " ".join(parts[1:])
                     result = self.close_application(app_name)
-                elif action_type == "list_apps":
-                    result = self.list_allowed_apps()
                 elif action_type == "time":
                     result = self.get_time()
                 elif action_type == "day":
                     result = self.get_day()
                 elif action_type == "terminate":
-                    result = f"aurevoir {self.name}"
+                    result = f"Aurevoir {self.name}"
                     self.cancel = True
         else:
             result = ai_response  

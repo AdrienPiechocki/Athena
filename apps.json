@@ -1,7 +1,6 @@
 {
     "ALLOWED_APPS": [
         "firefox",
-        "godot",
         "blender",
         "audacity",
         "unityhub",
@@ -12,6 +11,7 @@
         "gnome-calculator"
     ],
     "ALLOWED_FLATPAKS": [
+        "org.godotengine.Godot",
         "org.gimp.GIMP",
         "org.kde.krita",
         "io.github.shiftey.Desktop",
@@ -24,6 +24,7 @@
     ],
     
     "ALIASES": {
+        "godot": "org.godotengine.Godot",
         "gimp": "org.gimp.GIMP",
         "krita":"org.kde.krita",
         "github desktop":"io.github.shiftey.Desktop",
@@ -55,7 +56,7 @@
         "contacts": "gnome-contacts",
         "agenda": "gnome-calendar",
         "calendrier": "gnome-calendar",
-        "calendad": "gnome-calendar",
+        "calendar": "gnome-calendar",
         "calculatrice": "gnome-calculator",
         "calculator": "gnome-calculator"
     }
