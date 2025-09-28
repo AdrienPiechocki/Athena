@@ -30,6 +30,8 @@ class Brain():
     ACTION: day
     - Si l'utilisateur te demanque de t'arrêter, réponds UNIQUEMENT avec :
     ACTION: terminate
+    Si l'utilisateur demande plusieurs actions à la fois, réponds UNIQUEMENT avec :
+    <action_1> <action_2>
     Sinon, réponds normalement et simplement (une phrase ou deux max).
     N'utilise pas d'emojis.
     """
@@ -163,31 +165,36 @@ class Brain():
         result = ""  
         ai_response_raw = self.query_ollama(user_input)
         ai_response = self.clean_think(ai_response_raw)
-
+        results = []
         if ai_response.startswith("ACTION:"):
             parts = ai_response.replace("ACTION:", "").strip().split()
-            action_type = parts[0] if parts else ""
+            actions = []
+            for part in parts:
+                if part in self.ALLOWED_ACTIONS:
+                    actions.append(part)
+                else:
+                    actions[-1] = actions[-1]+f" {part}"
 
-            if action_type not in self.ALLOWED_ACTIONS:
-                result = f"Action {action_type} non autorisée."
-            else:
-                if action_type == "run":
-                    app_name = " ".join(parts[1:])
-                    result = self.run_application(app_name)
-                elif action_type == "close":
-                    app_name = " ".join(parts[1:])
-                    result = self.close_application(app_name)
-                elif action_type == "time":
-                    result = self.get_time()
-                elif action_type == "day":
-                    result = self.get_day()
-                elif action_type == "terminate":
-                    result = f"Aurevoir {self.name}"
+            for action in actions:
+                if "run" in action:
+                    app_name = " ".join(action.strip().split()[1:])
+                    results.append(self.run_application(app_name))
+                elif "close" in action:
+                    app_name = " ".join(action.strip().split()[1:])
+                    results.append(self.close_application(app_name))
+                elif "time" in action:
+                    results.append(self.get_time())
+                elif "day" in action:
+                    results.append(self.get_day())
+                elif "terminate" in action:
+                    results.append(f"Aurevoir {self.name}")
                     self.cancel = True
+                else: 
+                    results.append(f"Action {action} non autorisée.")
         else:
-            result = ai_response  
+            results.append(ai_response)  
 
-        result = self.format_markdown(result)
-
-        print(f"🤖 {result}")
-        self.speaker.say(result)
+        for result in results:
+            result = self.format_markdown(result)
+            print(f"🤖 {result}")
+            self.speaker.say(result)

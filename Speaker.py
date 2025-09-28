@@ -11,7 +11,8 @@ class Speaker:
 
     def say(self, text):
         # Si un processus est déjà en cours, on le stoppe avant d’en lancer un nouveau
-        self.stop()
+        if self.process and self.process.poll() is None:
+            self.process.wait()  # attendre l’arrêt
 
         cmd = [
             "espeak-ng",

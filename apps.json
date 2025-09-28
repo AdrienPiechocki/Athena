@@ -8,19 +8,20 @@
         "gnome-maps",
         "gnome-contacts",
         "gnome-calendar",
-        "gnome-calculator"
+        "gnome-calculator",
+        "steam",
+        "lutris",
+        "code"
     ],
     "ALLOWED_FLATPAKS": [
         "org.godotengine.Godot",
         "org.gimp.GIMP",
         "org.kde.krita",
         "io.github.shiftey.Desktop",
-        "com.discordapp.Discord",
-        "com.valvesoftware.Steam",
+        "dev.vencord.Vesktop",
         "page.kramo.Cartridges",
         "md.obsidian.Obsidian",
-        "io.github.amit9838.mousam",
-        "com.visualstudio.code"
+        "io.github.amit9838.mousam"
     ],
     
     "ALIASES": {
@@ -29,9 +30,8 @@
         "krita":"org.kde.krita",
         "github desktop":"io.github.shiftey.Desktop",
         "github":"io.github.shiftey.Desktop",
-        "discord":"com.discordapp.Discord",
-        "discorde":"com.discordapp.Discord",
-        "steam":"com.valvesoftware.Steam",
+        "discord":"dev.vencord.Vesktop",
+        "discorde":"dev.vencord.Vesktop",
         "cartouche":"page.kramo.Cartridges",
         "cartouches":"page.kramo.Cartridges",
         "jeux":"page.kramo.Cartridges",
@@ -42,9 +42,9 @@
         "weather": "io.github.amit9838.mousam",
         "mousam": "io.github.amit9838.mousam",
         "unity": "unityhub",
-        "visual studio": "com.visualstudio.code",
-        "visual studio code": "com.visualstudio.code",
-        "code": "com.visualstudio.code",
+        "visual studio": "code",
+        "visual studio code": "code",
+        "code": "code",
         "navigateur": "firefox",
         "dossier": "nautilus",
         "dossiers": "nautilus",

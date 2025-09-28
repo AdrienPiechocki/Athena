@@ -41,10 +41,12 @@ def recognize_loop(recognizer, q):
             text = result.get("text", "").strip().lower()
             if text:
                 if not called and hotword in text:
+                    speaker.stop()
                     print(f"🗣️ {text}")
                     brain.agent_loop(text)
                     called = True
                 elif called:
+                    speaker.stop()
                     print(f"🗣️ {text}")
                     brain.agent_loop(text)
 
