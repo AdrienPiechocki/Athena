@@ -6,6 +6,7 @@ import re
 from Speaker import Speaker
 from datetime import datetime
 import locale
+import Press
 
 class Brain():
     name = os.getlogin()
@@ -17,19 +18,21 @@ class Brain():
 
     # ---------------------- CONFIGURATION ----------------------
 
-    ALLOWED_ACTIONS = ["run", "close", "list_apps", "time", "day", "terminate"]
+    ALLOWED_ACTIONS = ["run", "close", "list_apps", "time", "day", "press","terminate"]
 
     SYSTEM_PROMPT = """Tu es un assistant IA par commande vocale répondant au nom d'Athéna.
     - Si l'utilisateur te demande d'ouvrir ou de lancer une application (classique ou flatpak), réponds UNIQUEMENT avec :
     ACTION: run <nom_application_ou_alias>
     - Si l'utilisateur te demande de fermer une application (classique ou flatpak), réponds UNIQUEMENT avec :
     ACTION: close <nom_application_ou_alias>
-    - Si l'utilisateur te demanque l'heure qu'il est, réponds UNIQUEMENT avec :
+    - Si l'utilisateur te demande l'heure qu'il est, réponds UNIQUEMENT avec :
     ACTION: time
-    - Si l'utilisateur te demanque la date du jour, réponds UNIQUEMENT avec :
+    - Si l'utilisateur te demande la date du jour, réponds UNIQUEMENT avec :
     ACTION: day
-    - Si l'utilisateur te demanque de t'arrêter, réponds UNIQUEMENT avec :
+    - Si l'utilisateur te demande de t'arrêter, réponds UNIQUEMENT avec :
     ACTION: terminate
+    - Si l'utilisateur te demande d'appuyer quelque part, réponds UNIQUEMENT avec :
+    ACTION: press <endroit>
     Si l'utilisateur demande plusieurs actions à la fois, réponds UNIQUEMENT avec :
     <action_1> <action_2>
     Sinon, réponds normalement et simplement (une phrase ou deux max).
@@ -60,7 +63,7 @@ class Brain():
 
             if response.status_code != 200:
                 print("Erreur API Ollama :", response.status_code, response.text)
-                return "Erreur lors de la génération de la réponse."
+                return "Erreur lors de la génération de la réponse"
 
             full_response = ""
             for line in response.iter_lines():
@@ -76,7 +79,7 @@ class Brain():
 
         except requests.exceptions.RequestException as e:
             print("Erreur de connexion à Ollama:", e)
-            return "Erreur de connexion à Ollama."
+            return "Erreur de connexion à Ollama"
 
 
     def run_application(self, app_name):
@@ -93,7 +96,7 @@ class Brain():
                     stdin=subprocess.DEVNULL,
                     preexec_fn=os.setpgrp
                 )
-                return f"Application {called} lancée."
+                return f"Application {called} lancée"
             except Exception as e:
                 return f"Erreur lors du lancement de {called} : {e}"
 
@@ -106,12 +109,12 @@ class Brain():
                     stdin=subprocess.DEVNULL,
                     preexec_fn=os.setpgrp
                 )
-                return f"Flatpak {called} lancé."
+                return f"Flatpak {called} lancé"
             except Exception as e:
                 return f"Erreur lors du lancement de {called} : {e}"
 
         else:
-            return f"Application {called} non autorisée."
+            return f"Application {called} non autorisée"
 
     def close_application(self, app_name):
         called = app_name
@@ -121,19 +124,19 @@ class Brain():
         if app_name in self.ALLOWED_APPS:
             try:
                 subprocess.run(["pkill", "-f", app_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return f"Application {called} fermée."
+                return f"Application {called} fermée"
             except Exception as e:
                 return f"Erreur lors de la fermeture de {called} : {e}"
 
         elif app_name in self.ALLOWED_FLATPAKS:
             try:
                 subprocess.run(["flatpak", "kill", app_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return f"Flatpak {called} fermé."
+                return f"Flatpak {called} fermé"
             except Exception as e:
                 return f"Erreur lors de la fermeture de {called} : {e}"
 
         else:
-            return f"Application {called} non autorisée."
+            return f"Application {called} non autorisée"
 
     def get_time(self):
         now = datetime.now()
@@ -186,11 +189,14 @@ class Brain():
                     results.append(self.get_time())
                 elif "day" in action:
                     results.append(self.get_day())
+                elif "press" in action:
+                    endroit =  " ".join(action.strip().split()[1:])
+                    results.append(Press.Press(endroit))
                 elif "terminate" in action:
                     results.append(f"Aurevoir {self.name}")
                     self.cancel = True
                 else: 
-                    results.append(f"Action {action} non autorisée.")
+                    results.append(f"Action {action} non autorisée")
         else:
             results.append(ai_response)  
 
