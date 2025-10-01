@@ -44,7 +44,7 @@ def Press(endroit):
     # -----------------------------
     # 3️⃣ Multi-scale Template Matching
     # -----------------------------
-    threshold = 0.9
+    threshold = 0.8
     found = None
 
     for scale in np.linspace(0.01, 1.0):  # essaie différentes tailles (10% à 100%)
