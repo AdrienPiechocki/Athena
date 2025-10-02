@@ -20,7 +20,7 @@ def clean(path):
 
 def Press(endroit):
     # -----------------------------
-    # 1️⃣ Capturer l'écran avec Flameshot
+    # Take screenshot with flameshot
     # -----------------------------
     screenshot_path = "/tmp/screen.png"
     clean(screenshot_path)
@@ -32,10 +32,10 @@ def Press(endroit):
     if not os.path.exists(screenshot_path):
         return lang["screenshot not found"]
 
-    time.sleep(0.2)  # s'assurer que le fichier est prêt
+    time.sleep(0.2)  # make sure file is ready
 
     # -----------------------------
-    # 2️⃣ Charger les images avec OpenCV
+    # Load images to OpenCV
     # -----------------------------
     screen = cv2.imread(screenshot_path)
     if screen is None:
@@ -48,24 +48,24 @@ def Press(endroit):
         clean(screenshot_path)
         return lang["patern unreadable"]
     # -----------------------------
-    # 3️⃣ Multi-scale Template Matching
+    # Multi-scale Template Matching
     # -----------------------------
     threshold = 0.9
     found = None
 
-    for scale in np.linspace(0.01, 1.0):  # essaie différentes tailles (10% à 100%)
+    for scale in np.linspace(0.01, 1.0):  # tries different sizes (10% to 100%)
         resized = cv2.resize(template, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
         h, w = resized.shape[:2]
 
         if h > screen.shape[0] or w > screen.shape[1]:
-            continue  # trop grand, skip
+            continue  # too big, skip
 
         result = cv2.matchTemplate(screen, resized, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
         if max_val > threshold:
             found = (max_val, max_loc, (w, h))
-            break  # si trouvé avec assez de confiance, stop
+            break  # found with enough confidence, stop
 
     if found:
         max_val, top_left, (w, h) = found

@@ -19,7 +19,7 @@ class MainWindow(QWidget):
         self.setWindowTitle("Athéna")
         self.resize(800, 500)
 
-        # Layout principal
+        # Main layout
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(30, 30, 30, 30)
         self.layout.setSpacing(15)
@@ -31,11 +31,11 @@ class MainWindow(QWidget):
         self.scroll_area.setFrameShape(QScrollArea.NoFrame)
         self.layout.addWidget(self.scroll_area)
 
-        # Widget interne qui contient tout (label + boutons)
+        # Inner Widget
         self.scroll_content = QWidget()
         self.scroll_area.setWidget(self.scroll_content)
 
-        # Layout vertical interne
+        # Inner vertical layout
         self.scroll_layout = QVBoxLayout(self.scroll_content)
         self.scroll_layout.setSpacing(20)
 
@@ -47,14 +47,13 @@ class MainWindow(QWidget):
         self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.scroll_layout.addWidget(self.label)
 
-        # Grille des boutons
+        # Buttons grid
         self.grid_widget = QWidget()
         self.button_grid = QGridLayout()
         self.button_grid.setSpacing(10)
         self.grid_widget.setLayout(self.button_grid)
         self.scroll_layout.addWidget(self.grid_widget)
 
-        # Définir les langues
         self.languages = {
             "Français": {
                 "icon": "./data/flags/fr.svg",
@@ -68,7 +67,7 @@ class MainWindow(QWidget):
         self.min_button_width = 150
         self.buttons = []
 
-        # Création initiale des boutons
+        # Initial buttons creation
         self.create_buttons(columns=3)
 
         # Styles
@@ -101,7 +100,7 @@ class MainWindow(QWidget):
             }
         """)
 
-        # Message initial
+        # Initial message
         self.announce("Welcome to Athena's installation process. Please select a Language.")
 
     def create_buttons(self, columns: int):
@@ -114,10 +113,10 @@ class MainWindow(QWidget):
             button = QPushButton(lang)
             button.setFocusPolicy(Qt.StrongFocus)
 
-            # Ajouter l'icône du drapeau si disponible
+            # Add flag if availiable
             if "icon" in self.languages[lang]:
                 button.setIcon(QIcon(self.languages[lang]["icon"]))
-                button.setIconSize(QSize(64, 64))  # taille du drapeau
+                button.setIconSize(QSize(64, 64))  # flag size
 
             button.clicked.connect(lambda checked, l=lang: self.on_button_clicked(l))
             self.button_grid.addWidget(button, index // columns, index % columns)

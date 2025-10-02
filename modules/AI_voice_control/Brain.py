@@ -27,23 +27,23 @@ class Brain():
         if self.use_ollama:
             self.ALLOWED_ACTIONS = self.config.get("Ollama", "actions", fallback=False)
             self.SYSTEM_PROMPT = f"""
-                Tu es un assistant IA par commande vocale répondant au nom d'Athéna. Ton utilisateur s'appelle {self.name} et parle {self.lang["language"]}.
-                - Si l'utilisateur te demande d'ouvrir ou de lancer une application (classique ou flatpak), réponds UNIQUEMENT avec :
-                ACTION: open <nom_application_ou_alias>
-                - Si l'utilisateur te demande de fermer une application (classique ou flatpak), réponds UNIQUEMENT avec :
-                ACTION: close <nom_application_ou_alias>
-                - Si l'utilisateur te demande l'heure qu'il est, réponds UNIQUEMENT avec :
+                You are an voice commanded AI assistant called Athena. Your user is called {self.name} and speaks {self.lang["language"]}.
+                - If the user asks you to open an app, ONLY answer with :
+                ACTION: open <app_name>
+                - If the user asks you to close an app, ONLY answer with :
+                ACTION: close <app_name>
+                - If the user asks for what time it is, ONLY answer with :
                 ACTION: time
-                - Si l'utilisateur te demande la date du jour, réponds UNIQUEMENT avec :
+                - If the user asks you the date, ONLY answer with :
                 ACTION: day
-                - Si l'utilisateur te demande de t'arrêter, réponds UNIQUEMENT avec :
+                - If the user asks you to stop yourself, ONLY answer with :
                 ACTION: terminate
-                - Si l'utilisateur te demande d'appuyer quelque part, réponds UNIQUEMENT avec :
-                ACTION: press <endroit>
-                Si l'utilisateur demande plusieurs actions à la fois, réponds UNIQUEMENT avec :
+                - If the user asks you to click somewhere, ONLY answer with :
+                ACTION: press <somewhere>
+                If the user asks multiple actions at once, ONLY answer with :
                 ACTION: <action_1> ACTION: <action_2> ACTION: ...
-                Sinon, réponds normalement et simplement (une phrase ou deux max).
-                N'utilise pas d'emojis.
+                Else, answer normaly and simply (one sentence or two).
+                Don't use emojis.
                 /no_think
                 """
             self.conversation_history = [{"role": "system", "content": (self.SYSTEM_PROMPT)}]
@@ -54,7 +54,7 @@ class Brain():
             self.apps = json.load(f)
         self.ALLOWED_APPS = self.apps["ALLOWED_APPS"]
 
-    # ---------------------- FONCTIONS ----------------------
+    # ---------------------- FUNCTIONS ----------------------
 
     def update_history(self, prompt, response): 
         path = "modules/AI_voice_control/history.log"
@@ -80,7 +80,7 @@ class Brain():
             response = ollama.chat(
                 model="qwen3",
                 messages=self.conversation_history,
-                stream=True  # <-- important
+                stream=True
             )
 
             full_response = ""
@@ -105,7 +105,7 @@ class Brain():
             raise ValueError(f"{path} {self.lang["no exec"]}")
 
         exec_cmd = config["Desktop Entry"]["Exec"]
-        # Nettoyage des placeholders (%u, %f, %U, %F, etc.)
+        # cleans placeholders (%u, %f, %U, %F, etc.)
         for placeholder in ("%u", "%U", "%f", "%F", "%i", "%c", "%k"):
             exec_cmd = exec_cmd.replace(placeholder, "")
         return exec_cmd.strip()
@@ -117,10 +117,8 @@ class Brain():
         if not parts:
             return None
 
-        # Cas 1 : flatpak run org.foo.Bar
+        # Case 1 : flatpak run org.foo.Bar
         if parts[0].endswith("flatpak") and "run" in parts:
-            # L'ID Flatpak est le dernier argument qui ne commence pas par --
-            # et n'est pas un placeholder @@ ou %f
             for part in reversed(parts):
                 if not part.startswith("--") and not part.startswith("@@") and not part.startswith("%"):
                     app_id = part
@@ -128,13 +126,13 @@ class Brain():
 
 
 
-        # Cas 2 : env FOO=bar myapp
+        # Case 2 : env FOO=bar myapp
         if parts[0] == "env":
             for i, token in enumerate(parts[1:], start=1):
-                if "=" not in token:  # premier qui n'est pas une variable d'env
+                if "=" not in token: 
                     return ("binary", token)
 
-        # Cas 3 : sh -c "commande ..."
+        # Case 3 : sh -c "commande ..."
         if parts[0] in ("sh", "bash") and "-c" in parts:
             idx = parts.index("-c")
             if idx + 1 < len(parts):
@@ -143,15 +141,15 @@ class Brain():
                 if inner_parts:
                     return ("binary", inner_parts[0])
 
-        # Cas 4 : AppImage (fichier qui finit par .AppImage)
+        # Case 4 : AppImage
         if parts[0].endswith(".AppImage") and os.path.isfile(parts[0]):
-            return ("binary", os.path.basename(parts[0]))  # ex: MyApp.AppImage
+            return ("binary", os.path.basename(parts[0]))
 
-        # Cas 5 : KDE / Qt executables (kf5-xxx, qt5-xxx)
+        # Case 5 : KDE / Qt executables (kf5-xxx, qt5-xxx)
         if parts[0].startswith(("kf5", "qt5")):
             return ("binary", parts[0])
 
-        # Cas par défaut : premier mot
+        # Default case : first word
         return ("binary", parts[0])
 
 
@@ -159,15 +157,15 @@ class Brain():
     def run_application(self, app_name):
         app_name = app_name.lower()
 
-       # Recherche exacte ou partielle
+       # Exact or partial search
         desktop_file = None
         best_match = None
         for file, aliases in self.ALLOWED_APPS.items():
-            # Recherche exacte
+            # exact search
             if app_name in aliases:
                 desktop_file = file
                 break
-            # Recherche partielle / similaire
+            # partial search
             for alias in aliases:
                 if app_name in alias or alias in app_name:
                     desktop_file = file
@@ -176,7 +174,7 @@ class Brain():
             if desktop_file:
                 break
 
-        # Si pas de correspondance, recherche floue (fuzzy matching)
+        # With no correspondence, fuzzy matching
         if not desktop_file:
             all_aliases = [(alias, file) for file, aliases in self.ALLOWED_APPS.items() for alias in aliases]
             matches = difflib.get_close_matches(app_name, [a for a, f in all_aliases], n=1, cutoff=0.8)
@@ -205,7 +203,6 @@ class Brain():
     def close_application(self, app_name):
         app_name = app_name.lower()
 
-        # Recherche exacte, partielle et fuzzy comme pour run_application
         desktop_file = None
         best_match = None
         for file, aliases in self.ALLOWED_APPS.items():
@@ -270,7 +267,7 @@ class Brain():
         Supprime tout le bloc <think>...</think> du texte.
         Retourne le texte nettoyé.
         """
-        # Supprime tous les <think>...</think> (multilignes)
+        # Deletes all the <think>...</think> (multiline)
         cleaned = re.sub(r"<think>.*?</think>", "", ai_response_raw, flags=re.DOTALL)
         return cleaned.strip()
 
@@ -282,7 +279,7 @@ class Brain():
         no_datetime_text = re.sub(pattern, '', text).strip()
         return re.sub(r"\*(.*?)\*", r"\033[1m\1\033[0m", no_datetime_text)
 
-    # ---------------------- BOUCLE PRINCIPALE ----------------------
+    # ---------------------- MAIN LOOP ----------------------
     def agent_loop(self, user_input:str):
         if self.use_ollama:
             ai_response_raw = self.query_ollama(user_input)

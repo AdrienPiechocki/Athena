@@ -15,12 +15,12 @@ class Speaker:
         self.pitch = str(pitch)
         self.volume = str(volume)
         self.gap = str(gap)
-        self.process = None  # pour stocker le process en cours
+        self.process = None  # to stock ongoing process
 
     def say(self, text):
-        # Si un processus est déjà en cours, on le stoppe avant d’en lancer un nouveau
+        # If a process in ongoing, wait for it to finish
         if self.process and self.process.poll() is None:
-            self.process.wait()  # attendre l’arrêt
+            self.process.wait()
 
         cmd = [
             "espeak-ng",
@@ -31,15 +31,15 @@ class Speaker:
             "-g", self.gap,
             text
         ]
-        # Popen au lieu de run (non bloquant)
+        
         self.process = subprocess.Popen(cmd)
 
     def stop(self):
         if self.process and self.process.poll() is None:
-            # process encore actif
+            # process still active
             self.process.terminate()
             try:
-                self.process.wait(timeout=1)  # attendre l’arrêt
+                self.process.wait(timeout=1) 
             except subprocess.TimeoutExpired:
                 self.process.kill()
         self.process = None
