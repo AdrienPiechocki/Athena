@@ -1,5 +1,5 @@
 # Athena
-This app is a **WIP** accessible computer assistant. It works with a **local** version of Qwen3, thanks to Ollama.
+This app is a **WIP** accessible computer assistant written in Python. It works with a **local** version of Qwen3, thanks to Ollama.
 For now, you can use your voice to command the AI and ask questions.
 
 **For now, it only speaks and understands French**
