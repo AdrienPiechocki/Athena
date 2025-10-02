@@ -309,7 +309,7 @@ class Brain():
                         endroit =  " ".join(action.strip().split()[1:])
                         ai_response = ai_response.replace(f'ACTION: press {endroit}', Press(endroit))
                     elif "terminate" in action and "terminate" in self.ALLOWED_ACTIONS:
-                        ai_response = ai_response.replace('ACTION: terminate', f"Aurevoir {self.name}")
+                        ai_response = ai_response.replace('ACTION: terminate', f"{self.lang["goodbye"]} {self.name}")
                         self.cancel = True
                     else: 
                         ai_response = self.lang["non authorized action"]

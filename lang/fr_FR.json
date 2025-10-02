@@ -24,5 +24,6 @@
     "screenshot not found": "Erreur : impossible de trouver la capture d'écran",
     "screenshot unreadable": "Erreur : impossible de lire la capture d'écran",
     "patern unreadable": "Erreur : impossible de lire le paterne",
-    "clicked": "cliqué"
+    "clicked": "cliqué",
+    "goodbye": "Aurevoir"
 }

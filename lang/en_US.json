@@ -24,5 +24,6 @@
     "screenshot not found": "Error : can't  find screenshot",
     "screenshot unreadable": "Error : can't read screenshot",
     "patern unreadable": "Error : can't read patern image",
-    "clicked": "clicked"
+    "clicked": "clicked",
+    "goodbye": "Goodbye"
 }
