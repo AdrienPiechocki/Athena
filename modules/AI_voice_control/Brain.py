@@ -29,7 +29,8 @@ class Brain():
             self.use_speaker = self.config.getboolean("Ollama", "speaker", fallback=False)
             self.ALLOWED_ACTIONS = self.config.get("Ollama", "actions", fallback=False)
             self.SYSTEM_PROMPT = f"""
-                You are an voice commanded AI assistant called Athena. Your user is called {self.name} and speaks {self.lang["language"]}.
+                You are an voice commanded AI assistant called {self.lang["hotword"].capitalize()}. 
+                Your user is called {self.name} and speaks {self.lang["language"]}.
                 - If the user asks you to open an app, ONLY answer with :
                 ACTION: open <app_name>
                 - If the user asks you to close an app, ONLY answer with :
