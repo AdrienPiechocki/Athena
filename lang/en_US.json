@@ -31,5 +31,7 @@
     "voice module": "Voice",
     "slider module": "Slider",
     "back button": "Back",
-    "next button": "Next"
+    "next button": "Next",
+    "downloading vosk": "Downloading Vosk model (this may take a while)",
+    "downloaded vosk": "Vosk model downloaded"
 }

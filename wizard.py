@@ -1,13 +1,16 @@
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLabel, QPushButton,
     QSizePolicy, QScrollArea, QGridLayout, QStackedWidget,
-    QCheckBox, QMessageBox
+    QCheckBox, QMessageBox, QProgressBar
 )
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QFont, QIcon
 import sys
 import configparser
 import json
+import os
+import requests
+import zipfile
 
 class SelectLanguage(QWidget):
 
@@ -233,11 +236,65 @@ class SelectModules(QWidget):
         self.back_clicked.emit()
 
 
+class InstallVosk(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.config = configparser.ConfigParser()
+        self.config.read("settings/config.cfg")
+        self.lang = {}
+
+        # Main layout
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(30, 30, 30, 30)
+        self.layout.setSpacing(15)
+
+        # ScrollArea
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFocusPolicy(Qt.NoFocus)
+        self.scroll_area.setFrameShape(QScrollArea.NoFrame)
+        self.layout.addWidget(self.scroll_area)
+
+        # Inner Widget
+        self.scroll_content = QWidget()
+        self.scroll_area.setWidget(self.scroll_content)
+
+        # Inner vertical layout
+        self.scroll_layout = QVBoxLayout(self.scroll_content)
+        self.scroll_layout.setSpacing(20)
+
+        # Label
+        self.label = QLabel("")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setFocusPolicy(Qt.StrongFocus)
+        self.label.setWordWrap(True)
+        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.scroll_layout.addWidget(self.label)
+
+    def load_language(self):
+        self.config.read("settings/config.cfg")
+        lang_code = self.config.get("General", "lang", fallback="en_US")
+        with open(f"./lang/{lang_code}.json", "r", encoding="utf-8") as f:
+            self.lang = json.load(f)
+
+        self.label.setText(self.lang["downloading vosk"])
+        self.label.setAccessibleDescription(self.lang["downloading vosk"])
+    
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        size = self.scroll_area.height() // 15
+        font = QFont("Arial", size)
+        self.label.setFont(font)
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Athena")
         self.resize(800, 600)
+
+        self.config = configparser.ConfigParser()
+        self.config.read("settings/config.cfg")
+        self.lang = {}
 
         # Layout principal
         self.layout = QVBoxLayout(self)
@@ -251,12 +308,15 @@ class MainWindow(QWidget):
         self.modules_selection.modules_validated.connect(self.next)
         self.modules_selection.back_clicked.connect(self.show_language_selection)
 
-        self.pages = [self.language_selection, self.modules_selection]
+        # Page 3 : Vosk installation
+        self.vosk_installation = InstallVosk()
+
+        self.pages = [self.language_selection, self.modules_selection, self.vosk_installation]
         for page in self.pages:
             self.layout.addWidget(page)
 
         self.show_page(self.language_selection)
-
+    
         # Styles
         self.setStyleSheet("""
             QWidget {
@@ -322,8 +382,81 @@ class MainWindow(QWidget):
         self.modules_selection.load_language()
         self.show_page(self.modules_selection)
     
+    def load_language(self):
+        self.config.read("settings/config.cfg")
+        lang_code = self.config.get("General", "lang", fallback="en_US")
+        with open(f"./lang/{lang_code}.json", "r", encoding="utf-8") as f:
+            self.lang = json.load(f)
+
     def next(self, selected_modules):
         print(selected_modules)
+        self.load_language()
+        if self.lang["voice module"] in selected_modules:
+            if self.config.get("General", "lang", fallback="en_US") == "en_US":
+                url = "https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip"
+
+            elif self.config.get("General", "lang", fallback="en_US") == "fr_FR":
+                url = "https://alphacephei.com/vosk/models/vosk-model-fr-0.22.zip"
+            
+            else:
+                return
+            self.download_vosk_model(url)
+            
+        print("done")
+        self.config.set("General", "wizard", "true")
+        with open("settings/config.cfg", "w") as configfile:
+            self.config.write(configfile)
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+
+    
+    def download_vosk_model(self, url):
+
+        local_zip = url.split("/")[-1]
+        filename = local_zip[:-4]
+        extract_folder = f"./vosk/"
+
+        if os.path.exists(extract_folder+filename+"/"):
+            self.config.set("Voice", "vosk", extract_folder+filename)
+            with open("settings/config.cfg", "w") as configfile:
+                self.config.write(configfile)
+            return
+
+        self.vosk_installation.load_language()
+        self.show_page(self.vosk_installation)
+
+        # Progress bar creation
+        progress = QProgressBar(self)
+        progress.setRange(0, 100)
+        self.layout.addWidget(progress)
+        progress.show()
+
+        # Download
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            total_size = int(r.headers.get('content-length', 0))
+            downloaded = 0
+            with open(local_zip, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if total_size:
+                        percent = int(downloaded * 100 / total_size)
+                        progress.setValue(percent)
+                        QApplication.processEvents()  # update progress bar
+
+        # Unzip
+        with zipfile.ZipFile(local_zip, "r") as zip_ref:
+            zip_ref.extractall(extract_folder)
+
+        self.config.set("Voice", "vosk", extract_folder+filename)
+        with open("settings/config.cfg", "w") as configfile:
+            self.config.write(configfile)
+        os.remove(local_zip)
+        progress.setValue(100)
+        QMessageBox.information(self, "Done", self.lang["downloaded vosk"])
+        progress.deleteLater()
+
 
 
 if __name__ == "__main__":
