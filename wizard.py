@@ -45,6 +45,10 @@ class MainWindow(QWidget):
             QLabel {
                 padding: 15px;
             }
+            QLabel:focus {
+                border: 4px solid #FFA500;
+                outline: none;
+            }
             QPushButton {
                 background-color: #0000FF;
                 color: #FFFFFF;
@@ -68,50 +72,18 @@ class MainWindow(QWidget):
         self.announce("Bienvenue dans l'installation d'Athéna, votre assistant accessible sous Linux.")
 
         # Ajustement initial de la taille du texte
-        self.update_font_size()
 
     def resizeEvent(self, event):
-        """Réajuste la taille de la police à chaque redimensionnement"""
-        self.update_font_size()
         super().resizeEvent(event)
-
-    def update_font_size(self):
-        """Adapte la taille du texte pour qu'il remplisse tout l'espace disponible"""
-        min_label_font = 24
-        min_button_font = 18
-
-        label_width = self.label.width()
-        label_height = self.label.height()
-
-        text = self.label.text()
-        if not text:
-            return
-
-        # Commencer avec une grosse taille et réduire si nécessaire
-        font_size = max(label_height, label_width)  # taille initiale approximative
-        font = QFont("Arial", font_size)
+        # Ajuste la taille du texte selon la largeur du label
+        size = self.label.height() // 5
+        font = QFont("Arial", size)
         self.label.setFont(font)
-        self.button.setFont(QFont("Arial", max(min_button_font, int(font_size * 0.6))))
+        self.button.setFont(font)
 
-        # Ajuster la taille pour que le texte tienne dans largeur et hauteur
-        metrics = self.label.fontMetrics()
-        lines = text.split('\n')
-        total_text_height = metrics.lineSpacing() * len(lines)
-
-        while (total_text_height > label_height or any(metrics.horizontalAdvance(line) > label_width for line in lines)) and font_size > min_label_font:
-            font_size -= 1
-            font.setPointSize(font_size)
-            self.label.setFont(font)
-            self.button.setFont(QFont("Arial", max(min_button_font, int(font_size * 0.6))))
-            metrics = self.label.fontMetrics()
-            total_text_height = metrics.lineSpacing() * len(lines)
-        
     def announce(self, text: str):
         self.label.setText(text)
         self.label.setAccessibleDescription(text)
-
-        # Déplacer le focus pour Orca
-        self.label.setFocus()
 
     def on_button_clicked(self):
         self.announce("Bouton cliqué !")
