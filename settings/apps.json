@@ -17,7 +17,7 @@
         "/var/lib/flatpak/exports/share/applications/org.kde.krita.desktop": ["krita"],
         "/var/lib/flatpak/exports/share/applications/io.github.shiftey.Desktop.desktop": ["github", "github desktop"],
         "/var/lib/flatpak/exports/share/applications/dev.vencord.Vesktop.desktop": ["discord"],
-        "/var/lib/flatpak/exports/share/applications/page.kramo.Cartridges.desktop": ["jeux", "cartouches"],
+        "/var/lib/flatpak/exports/share/applications/page.kramo.Cartridges.desktop": ["games library", "jeux", "cartouches"],
         "/var/lib/flatpak/exports/share/applications/md.obsidian.Obsidian.desktop": ["obsidian"],
         "/var/lib/flatpak/exports/share/applications/io.github.amit9838.mousam.desktop": ["météo", "weather", "mousam"],
         "/var/lib/flatpak/exports/share/applications/com.obsproject.Studio.desktop":["obs studio"] 
