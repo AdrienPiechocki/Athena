@@ -12,7 +12,7 @@ For now, you can use your voice to command the AI and ask questions.
 - install flameshot (to take screenshot for image recognition)
 - install Ollama and pull Qwen3
 - install a Vosk model (for speech recognition) and put it in this folder
-- in config.cfg, chose the language you want to use based on what's in the lang folder and input the path to your vosk model
+- in ``config.cfg``, chose the language you want to use based on what is in the ``lang`` folder and input the path to your vosk model
 
 ### Windows
 for now only on Linux
