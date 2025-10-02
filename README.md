@@ -2,7 +2,7 @@
 This app is a **WIP** accessible computer assistant written in Python. It works with a **local** version of Qwen3, thanks to Ollama.
 For now, you can use your voice to command the AI and ask questions.
 
-**For now, it only speaks and understands French**
+**For now, it only speaks and understands French or English**
 
 ## Installation 
 
@@ -11,7 +11,8 @@ For now, you can use your voice to command the AI and ask questions.
 - ``pip install -r requrements.txt``
 - install flameshot (to take screenshot for image recognition)
 - install Ollama and pull Qwen3
-- install the large French Vosk model (for speech recognition) and put it in this folder
+- install a Vosk model (for speech recognition) and put it in this folder
+- in config.cfg, chose the language you want to use based on what's in the lang folder and input the path to your vosk model
 
 ### Windows
 for now only on Linux
