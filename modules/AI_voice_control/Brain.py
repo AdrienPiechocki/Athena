@@ -26,7 +26,7 @@ class Brain():
         self.use_speaker = self.config.getboolean("Modules", "speaker", fallback=False)
         with open(f"./lang/{self.config.get("General", "lang", fallback=False)}.json", 'r', encoding='utf-8') as f:
             self.lang = json.load(f)
-        self.hotword = self.lang["athena"]
+        self.hotword = self.lang["hotword"]
         if self.use_ollama:
             self.ALLOWED_ACTIONS = self.config.get("Ollama", "actions", fallback=False)
             self.SYSTEM_PROMPT = f"""

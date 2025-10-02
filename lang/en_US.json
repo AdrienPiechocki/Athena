@@ -1,7 +1,7 @@
 {
     "language": "English",
     "lang": "en",
-    "athena": "athena",
+    "hotword": "athena",
     "starting": "Starting",
     "say Athena": "🎙️ Say Athena (Ctrl+C to stop manually)...",
     "stop Athena": "\n🛑 Terminated by user.",

@@ -1,7 +1,7 @@
 {
     "language": "Français",
     "lang": "fr",
-    "athena": "athéna",
+    "hotword": "athéna",
     "starting": "Démarrage",
     "say Athena": "🎙️ Dites Athéna (Ctrl+C pour arrêter manuellement)...",
     "stop Athena": "\n🛑 Arrêté par l'utilisateur.",
