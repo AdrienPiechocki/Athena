@@ -20,14 +20,14 @@ class Brain():
     def __init__(self):
         self.use_logging = False
         self.use_speaker = False
-        self.use_ollama = self.config.getboolean("Modules", "ollama", fallback=False)
+        self.use_ollama = self.config.getboolean("Modules", "voice", fallback=False)
         if self.use_ollama:
             with open(f"./lang/{self.config.get("General", "lang", fallback=False)}.json", 'r', encoding='utf-8') as f:
                 self.lang = json.load(f)
             self.hotword = self.lang["hotword"]
-            self.use_logging = self.config.getboolean("Ollama", "logging", fallback=False)
-            self.use_speaker = self.config.getboolean("Ollama", "speaker", fallback=False)
-            self.ALLOWED_ACTIONS = self.config.get("Ollama", "actions", fallback=False)
+            self.use_logging = self.config.getboolean("Voice", "logging", fallback=False)
+            self.use_speaker = self.config.getboolean("Voice", "speaker", fallback=False)
+            self.ALLOWED_ACTIONS = self.config.get("Voice", "actions", fallback=False)
             self.SYSTEM_PROMPT = f"""
                 You are an voice commanded AI assistant called {self.lang["hotword"].capitalize()}. 
                 Your user is called {self.name} and speaks {self.lang["language"]}.

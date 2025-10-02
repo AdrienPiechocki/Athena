@@ -25,5 +25,11 @@
     "screenshot unreadable": "Erreur : impossible de lire la capture d'écran",
     "patern unreadable": "Erreur : impossible de lire le paterne",
     "clicked": "cliqué",
-    "goodbye": "Aurevoir"
+    "goodbye": "Aurevoir",
+
+    "module selection":  "Quels modules voulez vous qu'Athéna utilise ?",
+    "voice module": "Voix",
+    "slider module": "Défilement",
+    "back button": "Retour",
+    "next button": "Suivant"
 }

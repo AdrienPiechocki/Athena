@@ -18,7 +18,7 @@ with open(f"./lang/{config.get("General", "lang", fallback=False)}.json", 'r', e
 print(f"{lang["starting"]}...")
 
 
-model = Model(config.get("General", "vosk", fallback=False))
+model = Model(config.get("Voice", "vosk", fallback=False))
 vosk_rate = 48000
 q = queue.Queue()
 
@@ -83,6 +83,3 @@ def main():
             run_session()
     except KeyboardInterrupt:
         end()
-
-if __name__ == "__main__":
-    main()
