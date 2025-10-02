@@ -10,7 +10,7 @@ For now, you can use your voice to command the AI and ask questions.
 (tested on Arch with GNOME 49 and on Linux Mint 22 with Cinnamon)
 - ``pip install -r requrements.txt``
 - install flameshot (to take screenshot for image recognition)
-- install Ollama and pull Qwen3 (base AI) and llava (for image recognition)
+- install Ollama and pull Qwen3
 - install the large French Vosk model (for speech recognition) and put it in this folder
 
 ### Windows
