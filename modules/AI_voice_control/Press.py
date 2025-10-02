@@ -4,6 +4,13 @@ import numpy as np
 import pyautogui
 import time
 import os
+import json
+import configparser
+
+config = configparser.ConfigParser()
+config.read("settings/config.cfg")
+with open(f"./lang/{config.get("General", "lang", fallback=False)}.json", 'r', encoding='utf-8') as f:
+    lang = json.load(f)
 
 def clean(path):
     try:
@@ -20,10 +27,10 @@ def Press(endroit):
     try:
         subprocess.run(["flameshot", "full", "--path", screenshot_path], check=True)
     except subprocess.CalledProcessError:
-        return "Erreur : impossible de capturer l'écran avec Flameshot."
+        return lang["flameshot error"]
 
     if not os.path.exists(screenshot_path):
-        return "Erreur : fichier de capture introuvable."
+        return lang["screenshot not found"]
 
     time.sleep(0.2)  # s'assurer que le fichier est prêt
 
@@ -33,14 +40,13 @@ def Press(endroit):
     screen = cv2.imread(screenshot_path)
     if screen is None:
         clean(screenshot_path)
-        return "Erreur : impossible de lire la capture d'écran"
+        return lang["screenshot unreadable"]
 
-    template_path = f"./images/{endroit.lower()}.png"
+    template_path = f"./modules/AI_voice_control/images/{endroit.lower()}.png"
     template = cv2.imread(template_path)
     if template is None:
         clean(screenshot_path)
-        return "Erreur : impossible de lire l'image"
-
+        return lang["patern unreadable"]
     # -----------------------------
     # 3️⃣ Multi-scale Template Matching
     # -----------------------------
@@ -66,8 +72,8 @@ def Press(endroit):
         center_x = top_left[0] + w // 2
         center_y = top_left[1] + h // 2
         pyautogui.click(center_x, center_y)
-        result = f"Bouton {endroit} cliqué"
+        result = f"{endroit} {lang["clicked"]}."
     else:
-        result = f"Bouton {endroit} non trouvé"
+        result = f"{endroit} {lang["not found"]}."
     clean(screenshot_path)
     return result

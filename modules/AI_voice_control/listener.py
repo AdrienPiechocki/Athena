@@ -5,11 +5,20 @@ import time
 import sys
 from .Brain import Brain
 from vosk import Model, KaldiRecognizer, SetLogLevel
+import configparser
+
 SetLogLevel(-1)
 
-print("Démarrage...")
+config = configparser.ConfigParser()
+config.read("settings/config.cfg")
 
-model = Model("vosk-model-fr-0.22")
+with open(f"./lang/{config.get("General", "lang", fallback=False)}.json", 'r', encoding='utf-8') as f:
+    lang = json.load(f)
+
+print(f"{lang["starting"]}...")
+
+
+model = Model(config.get("General", "vosk", fallback=False))
 vosk_rate = 48000
 q = queue.Queue()
 
@@ -48,7 +57,7 @@ def run_session():
     recognizer = KaldiRecognizer(model, vosk_rate)
     brain.cancel = False
 
-    print("🎙️ Dites Athéna (Ctrl+C pour arrêter)...")
+    print(lang["say Athena"])
 
     stream = sd.RawInputStream(samplerate=vosk_rate, blocksize=8000, dtype='int16',
                                channels=1, callback=audio_callback)
@@ -62,7 +71,7 @@ def run_session():
         time.sleep(0.1)
 
 def end():
-    print("\n🛑 Arrêt demandé par l’utilisateur.")
+    print(lang["stop Athena"])
     if stream:
         stream.stop()
         stream.close()

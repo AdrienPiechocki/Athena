@@ -14,7 +14,6 @@ import difflib
 
 class Brain():
     name = os.getlogin()
-    hotword = "athéna"
     cancel = False
     speaker = Speaker()
     config = configparser.ConfigParser()
@@ -26,10 +25,13 @@ class Brain():
         self.use_logging = self.config.getboolean("Modules", "logging", fallback=False)
         self.use_ollama = self.config.getboolean("Modules", "ollama", fallback=False)
         self.use_speaker = self.config.getboolean("Modules", "speaker", fallback=False)
+        with open(f"./lang/{self.config.get("General", "lang", fallback=False)}.json", 'r', encoding='utf-8') as f:
+            self.lang = json.load(f)
+        self.hotword = self.lang["athena"]
         if self.use_ollama:
-            self.ALLOWED_ACTIONS = self.config.get("ollama", "actions", fallback=False)
+            self.ALLOWED_ACTIONS = self.config.get("Ollama", "actions", fallback=False)
             self.SYSTEM_PROMPT = f"""
-                Tu es un assistant IA par commande vocale répondant au nom d'Athéna. Ton utilisateur s'appelle {self.name}.
+                Tu es un assistant IA par commande vocale répondant au nom d'Athéna. Ton utilisateur s'appelle {self.name} et parle {self.lang["language"]}.
                 - Si l'utilisateur te demande d'ouvrir ou de lancer une application (classique ou flatpak), réponds UNIQUEMENT avec :
                 ACTION: open <nom_application_ou_alias>
                 - Si l'utilisateur te demande de fermer une application (classique ou flatpak), réponds UNIQUEMENT avec :
@@ -95,8 +97,7 @@ class Brain():
 
 
         except requests.exceptions.RequestException as e:
-            print("Erreur de connexion à Ollama:", e)
-            return "Erreur de connexion à Ollama"
+            return self.lang["ollama error"], e
 
 
     def parse_desktop_file(self, path):
@@ -105,7 +106,7 @@ class Brain():
         config.read(path)
 
         if "Desktop Entry" not in config or "Exec" not in config["Desktop Entry"]:
-            raise ValueError(f"{path} ne contient pas de champ Exec")
+            raise ValueError(f"{path} {self.lang["no exec"]}")
 
         exec_cmd = config["Desktop Entry"]["Exec"]
         # Nettoyage des placeholders (%u, %f, %U, %F, etc.)
@@ -199,11 +200,11 @@ class Brain():
                                 close_fds=True,
                                 start_new_session=True
                                 )
-                return f"Application {app_name} lancée."
+                return f"{self.lang["app"]} {app_name} {self.lang["lauched"]}."
             except Exception as e:
-                return f"Erreur lors du lancement de {app_name} : {e}."
+                return f"{self.lang["launch error"]} {app_name} : {e}."
         else:
-            return f"Application {app_name} non autorisée."
+            return f"{self.lang["app"]} {app_name} {self.lang["not authorized"]}."
             
     def close_application(self, app_name):
         app_name = app_name.lower()
@@ -238,7 +239,7 @@ class Brain():
                 target = self.find_real_binary(exec_cmd)
 
                 if not target:
-                    return "Impossible de déterminer le binaire à fermer."
+                    return f"{self.lang["binary not found"]}."
 
                 mode, value = target
                 try: 
@@ -249,24 +250,24 @@ class Brain():
                             subprocess.run(["pkill", "-f", value], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, check=False)
                         else:
                             subprocess.run(["pkill", "-TERM", value], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, check=False)
-                    return f"Application {app_name} fermée."
+                    return f"{self.lang["app"]} {app_name} {self.lang["closed"]}."
                 except subprocess.CalledProcessError:
-                    return f"Aucun processus '{app_name}' trouvé."
+                    return f"{self.lang["process"]} '{app_name}' {self.lang["not found"]}."
 
             except Exception as e:
-                return f"Erreur lors de la fermeture de {app_name} : {e}."
+                return f"{self.lang["close error"]} {app_name} : {e}."
         else:
-            return f"Application {app_name} non autorisée."
+            return f"{self.lang["app"]} {app_name} {self.lang["not authorized"]}."
 
     def get_time(self):
         now = datetime.now()
         current_time = now.strftime("%H:%M")
-        return f"Il est actuellement {current_time}."
+        return f"{self.lang["time"]} {current_time}."
 
     def get_day(self):
         now = datetime.today()
         current_time = now.strftime("%A %d %B %Y")
-        return f"Nous sommes le {current_time}."
+        return f"{self.lang["day"]} {current_time}."
 
     def clean_think(self, ai_response_raw):
         """
@@ -312,12 +313,12 @@ class Brain():
                         ai_response = ai_response.replace('ACTION: terminate', f"Aurevoir {self.name}")
                         self.cancel = True
                     else: 
-                        ai_response = f"Action non autorisée"
+                        ai_response = self.lang["non authorized action"]
 
             result = self.format_markdown(ai_response)
             self.log(result)
         else:
-            result = "Le module d'IA n'est pas utilisé."
+            result = self.lang["no AI"]
             self.cancel = True
             self.log(result)
 
