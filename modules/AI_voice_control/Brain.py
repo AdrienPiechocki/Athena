@@ -20,6 +20,7 @@ class Brain():
     def __init__(self):
         self.use_logging = False
         self.use_speaker = False
+        self.hotword = ""
         self.use_ollama = self.config.getboolean("Modules", "voice", fallback=False)
         if self.use_ollama:
             with open(f"./lang/{self.config.get("General", "lang", fallback="en_US")}.json", 'r', encoding='utf-8') as f:

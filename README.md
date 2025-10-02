@@ -11,14 +11,14 @@ For now, you can use your voice to command the AI and ask questions.
 - ``pip install -r requrements.txt``
 - install flameshot (to take screenshot for image recognition)
 - install Ollama and pull Qwen3
-- install a Vosk model (for speech recognition) and put it in this folder
-- in ``config.cfg``, chose the language you want to use based on what is in the ``lang`` folder and input the path to your vosk model
 
 ### Windows
 for now only on Linux
 
 ## Usage
 ``python main.py`` to run the app
+When launching for the first time, you will be prompted by the installation wizard. Follow it's steps to complete the installation.
+
 ### Voiced commands
 - You can ask Athena to open or close apps among those in `settings/apps.json`
 - You can ask Athena what time or what day it is.

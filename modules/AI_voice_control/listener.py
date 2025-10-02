@@ -80,6 +80,10 @@ def end():
 def main():
     try:
         while True:
-            run_session()
+            if hotword:
+                run_session()
+            else:
+                print(lang["no AI"])
+                sys.exit(0)
     except KeyboardInterrupt:
         end()
