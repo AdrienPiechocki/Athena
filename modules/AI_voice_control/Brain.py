@@ -9,6 +9,9 @@ import locale
 from .Press import Press
 import configparser
 import ollama
+import shlex
+import signal
+import difflib
 
 class Brain():
     name = os.getlogin()
@@ -29,7 +32,7 @@ class Brain():
             self.SYSTEM_PROMPT = f"""
                 Tu es un assistant IA par commande vocale répondant au nom d'Athéna. Ton utilisateur s'appelle {self.name}.
                 - Si l'utilisateur te demande d'ouvrir ou de lancer une application (classique ou flatpak), réponds UNIQUEMENT avec :
-                ACTION: run <nom_application_ou_alias>
+                ACTION: open <nom_application_ou_alias>
                 - Si l'utilisateur te demande de fermer une application (classique ou flatpak), réponds UNIQUEMENT avec :
                 ACTION: close <nom_application_ou_alias>
                 - Si l'utilisateur te demande l'heure qu'il est, réponds UNIQUEMENT avec :
@@ -47,12 +50,12 @@ class Brain():
                 /no_think
                 """
             self.conversation_history = [{"role": "system", "content": (self.SYSTEM_PROMPT)}]
-            
+            with open("modules/AI_voice_control/history.log", 'a') as h:
+                h.write(f"{datetime.now()} [NEW SESSIONS STARTED] \n")
+
         with open("settings/apps.json", 'r', encoding='utf-8') as f:
             self.apps = json.load(f)
         self.ALLOWED_APPS = self.apps["ALLOWED_APPS"]
-        self.ALLOWED_FLATPAKS = self.apps["ALLOWED_FLATPAKS"]
-
 
     # ---------------------- FONCTIONS ----------------------
 
@@ -97,55 +100,162 @@ class Brain():
             return "Erreur de connexion à Ollama"
 
 
+    def parse_desktop_file(self, path):
+        """Lit un fichier .desktop et retourne la commande Exec nettoyée"""
+        config = configparser.ConfigParser(interpolation=None)
+        config.read(path)
+
+        if "Desktop Entry" not in config or "Exec" not in config["Desktop Entry"]:
+            raise ValueError(f"{path} ne contient pas de champ Exec")
+
+        exec_cmd = config["Desktop Entry"]["Exec"]
+        # Nettoyage des placeholders (%u, %f, %U, %F, etc.)
+        for placeholder in ("%u", "%U", "%f", "%F", "%i", "%c", "%k"):
+            exec_cmd = exec_cmd.replace(placeholder, "")
+        return exec_cmd.strip()
+
+    def find_real_binary(self, exec_cmd):
+        """Essaie de deviner le vrai binaire à partir de la commande Exec"""
+        parts = shlex.split(exec_cmd)
+
+        if not parts:
+            return None
+
+        # Cas 1 : flatpak run org.foo.Bar
+        if parts[0].endswith("flatpak") and "run" in parts:
+            # L'ID Flatpak est le dernier argument qui ne commence pas par --
+            # et n'est pas un placeholder @@ ou %f
+            for part in reversed(parts):
+                if not part.startswith("--") and not part.startswith("@@") and not part.startswith("%"):
+                    app_id = part
+                    return ("flatpak", app_id)
+
+
+
+        # Cas 2 : env FOO=bar myapp
+        if parts[0] == "env":
+            for i, token in enumerate(parts[1:], start=1):
+                if "=" not in token:  # premier qui n'est pas une variable d'env
+                    return ("binary", token)
+
+        # Cas 3 : sh -c "commande ..."
+        if parts[0] in ("sh", "bash") and "-c" in parts:
+            idx = parts.index("-c")
+            if idx + 1 < len(parts):
+                inner_cmd = parts[idx + 1]
+                inner_parts = shlex.split(inner_cmd)
+                if inner_parts:
+                    return ("binary", inner_parts[0])
+
+        # Cas 4 : AppImage (fichier qui finit par .AppImage)
+        if parts[0].endswith(".AppImage") and os.path.isfile(parts[0]):
+            return ("binary", os.path.basename(parts[0]))  # ex: MyApp.AppImage
+
+        # Cas 5 : KDE / Qt executables (kf5-xxx, qt5-xxx)
+        if parts[0].startswith(("kf5", "qt5")):
+            return ("binary", parts[0])
+
+        # Cas par défaut : premier mot
+        return ("binary", parts[0])
+
+
+
     def run_application(self, app_name):
         app_name = app_name.lower()
 
-        if app_name in self.ALLOWED_APPS.keys():
+       # Recherche exacte ou partielle
+        desktop_file = None
+        best_match = None
+        for file, aliases in self.ALLOWED_APPS.items():
+            # Recherche exacte
+            if app_name in aliases:
+                desktop_file = file
+                break
+            # Recherche partielle / similaire
+            for alias in aliases:
+                if app_name in alias or alias in app_name:
+                    desktop_file = file
+                    best_match = alias
+                    break
+            if desktop_file:
+                break
+
+        # Si pas de correspondance, recherche floue (fuzzy matching)
+        if not desktop_file:
+            all_aliases = [(alias, file) for file, aliases in self.ALLOWED_APPS.items() for alias in aliases]
+            matches = difflib.get_close_matches(app_name, [a for a, f in all_aliases], n=1, cutoff=0.8)
+            if matches:
+                match_alias = matches[0]
+                desktop_file = next(f for a, f in all_aliases if a == match_alias)
+                best_match = match_alias
+        
+        if desktop_file:
             try:
-                subprocess.Popen(
-                    [self.ALLOWED_APPS[app_name]],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    stdin=subprocess.DEVNULL,
-                    preexec_fn=os.setpgrp
-                )
+                exec_cmd = self.parse_desktop_file(desktop_file)
+                cmd = shlex.split(exec_cmd)
+                subprocess.Popen(cmd, 
+                                stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL,
+                                stdin=subprocess.DEVNULL,
+                                close_fds=True,
+                                start_new_session=True
+                                )
                 return f"Application {app_name} lancée."
             except Exception as e:
                 return f"Erreur lors du lancement de {app_name} : {e}."
-
-        elif app_name in self.ALLOWED_FLATPAKS.keys():
-            try:
-                subprocess.Popen(
-                    ["flatpak", "run", self.ALLOWED_FLATPAKS[app_name]],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    stdin=subprocess.DEVNULL,
-                    preexec_fn=os.setpgrp
-                )
-                return f"Flatpak {app_name} lancé."
-            except Exception as e:
-                return f"Erreur lors du lancement de {app_name} : {e}."
-
         else:
             return f"Application {app_name} non autorisée."
-
+            
     def close_application(self, app_name):
         app_name = app_name.lower()
 
-        if app_name in self.ALLOWED_APPS.keys():
+        # Recherche exacte, partielle et fuzzy comme pour run_application
+        desktop_file = None
+        best_match = None
+        for file, aliases in self.ALLOWED_APPS.items():
+            if app_name in aliases:
+                desktop_file = file
+                break
+            for alias in aliases:
+                if app_name in alias or alias in app_name:
+                    desktop_file = file
+                    best_match = alias
+                    break
+            if desktop_file:
+                break
+
+        if not desktop_file:
+            # Fuzzy matching
+            all_aliases = [(alias, file) for file, aliases in self.ALLOWED_APPS.items() for alias in aliases]
+            matches = difflib.get_close_matches(app_name, [a for a, f in all_aliases], n=1, cutoff=0.8)
+            if matches:
+                match_alias = matches[0]
+                desktop_file = next(f for a, f in all_aliases if a == match_alias)
+                best_match = match_alias
+
+        if desktop_file:
             try:
-                subprocess.run(["pkill", "-f", self.ALLOWED_APPS[app_name]], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return f"Application {app_name} fermée."
+                exec_cmd = self.parse_desktop_file(desktop_file)
+                target = self.find_real_binary(exec_cmd)
+
+                if not target:
+                    return "Impossible de déterminer le binaire à fermer."
+
+                mode, value = target
+                try: 
+                    if mode == "flatpak":
+                        subprocess.run(["flatpak", "kill", value], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, check=False)
+                    else:  # mode == "binary"
+                        if len(value) > 15:
+                            subprocess.run(["pkill", "-f", value], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, check=False)
+                        else:
+                            subprocess.run(["pkill", "-TERM", value], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, check=False)
+                    return f"Application {app_name} fermée."
+                except subprocess.CalledProcessError:
+                    return f"Aucun processus '{app_name}' trouvé."
+
             except Exception as e:
                 return f"Erreur lors de la fermeture de {app_name} : {e}."
-
-        elif app_name in self.ALLOWED_FLATPAKS.keys():
-            try:
-                subprocess.run(["flatpak", "kill", self.ALLOWED_FLATPAKS[app_name]], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return f"Flatpak {app_name} fermé."
-            except Exception as e:
-                return f"Erreur lors de la fermeture de {app_name} : {e}."
-
         else:
             return f"Application {app_name} non autorisée."
 
@@ -170,11 +280,11 @@ class Brain():
 
     def format_markdown(self, text: str) -> str:
         """
-        Transforme *texte* en texte gras avec ANSI.
+        Transforme *texte* en texte gras avec ANSI et enlève la date du message.
         """
         pattern = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?'
-        texte_sans_datetime = re.sub(pattern, '', text).strip()
-        return re.sub(r"\*(.*?)\*", r"\033[1m\1\033[0m", texte_sans_datetime)
+        no_datetime_text = re.sub(pattern, '', text).strip()
+        return re.sub(r"\*(.*?)\*", r"\033[1m\1\033[0m", no_datetime_text)
 
     # ---------------------- BOUCLE PRINCIPALE ----------------------
     def agent_loop(self, user_input:str):
@@ -186,24 +296,24 @@ class Brain():
                 actions = re.findall(r"ACTION:\s*(.*?)(?=\s*ACTION:|$)", ai_action)
                 actions = [a.strip() for a in actions]
                 for action in actions:
-                    if "run" in action:
+                    if "open" in action and "open" in self.ALLOWED_ACTIONS:
                         app_name = " ".join(action.strip().split()[1:])
-                        ai_response = ai_response.replace(f'ACTION: run {app_name}', self.run_application(app_name))
-                    elif "close" in action:
+                        ai_response = ai_response.replace(f'ACTION: open {app_name}', self.run_application(app_name))
+                    elif "close" in action and "close" in self.ALLOWED_ACTIONS:
                         app_name = " ".join(action.strip().split()[1:])
                         ai_response = ai_response.replace(f'ACTION: close {app_name}', self.close_application(app_name))
-                    elif "time" in action:
+                    elif "time" in action and "time" in self.ALLOWED_ACTIONS:
                         ai_response = ai_response.replace('ACTION: time', self.get_time())
-                    elif "day" in action:
+                    elif "day" in action and "day" in self.ALLOWED_ACTIONS:
                         ai_response = ai_response.replace('ACTION: day', self.get_day())
-                    elif "press" in action:
+                    elif "press" in action and "press" in self.ALLOWED_ACTIONS:
                         endroit =  " ".join(action.strip().split()[1:])
                         ai_response = ai_response.replace(f'ACTION: press {endroit}', Press(endroit))
-                    elif "terminate" in action:
+                    elif "terminate" in action and "terminate" in self.ALLOWED_ACTIONS:
                         ai_response = ai_response.replace('ACTION: terminate', f"Aurevoir {self.name}")
                         self.cancel = True
                     else: 
-                        ai_response = f"Action {action} non autorisée"
+                        ai_response = f"Action non autorisée"
 
             result = self.format_markdown(ai_response)
             self.log(result)
