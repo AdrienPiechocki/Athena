@@ -18,13 +18,15 @@ class Brain():
     config = configparser.ConfigParser()
     config.read("settings/config.cfg")
     def __init__(self):
-        self.use_logging = self.config.getboolean("Modules", "logging", fallback=False)
+        self.use_logging = False
+        self.use_speaker = False
         self.use_ollama = self.config.getboolean("Modules", "ollama", fallback=False)
-        self.use_speaker = self.config.getboolean("Modules", "speaker", fallback=False)
-        with open(f"./lang/{self.config.get("General", "lang", fallback=False)}.json", 'r', encoding='utf-8') as f:
-            self.lang = json.load(f)
-        self.hotword = self.lang["hotword"]
         if self.use_ollama:
+            with open(f"./lang/{self.config.get("General", "lang", fallback=False)}.json", 'r', encoding='utf-8') as f:
+                self.lang = json.load(f)
+            self.hotword = self.lang["hotword"]
+            self.use_logging = self.config.getboolean("Ollama", "logging", fallback=False)
+            self.use_speaker = self.config.getboolean("Ollama", "speaker", fallback=False)
             self.ALLOWED_ACTIONS = self.config.get("Ollama", "actions", fallback=False)
             self.SYSTEM_PROMPT = f"""
                 You are an voice commanded AI assistant called Athena. Your user is called {self.name} and speaks {self.lang["language"]}.
@@ -50,9 +52,9 @@ class Brain():
             with open("modules/AI_voice_control/history.log", 'a') as h:
                 h.write(f"{datetime.now()} [NEW SESSIONS STARTED] \n")
 
-        with open("settings/apps.json", 'r', encoding='utf-8') as f:
-            self.apps = json.load(f)
-        self.ALLOWED_APPS = self.apps["ALLOWED_APPS"]
+            with open("settings/apps.json", 'r', encoding='utf-8') as f:
+                self.apps = json.load(f)
+            self.ALLOWED_APPS = self.apps["ALLOWED_APPS"]
 
     # ---------------------- FUNCTIONS ----------------------
 
@@ -318,5 +320,5 @@ class Brain():
     def log(self, result):
         if self.use_logging:
             print(f"🤖 {result}")
-            if self.use_speaker:
-                self.speaker.say(result)
+        if self.use_speaker:
+            self.speaker.say(result)
