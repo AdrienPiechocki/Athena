@@ -1,10 +1,10 @@
 {
     "ALLOWED_APPS": {
-        "/usr/share/applications/firefox.desktop": ["firefox", "navigateur"],
+        "/usr/share/applications/firefox.desktop": ["firefox", "navigateur", "browser"],
         "/usr/share/applications/blender.desktop": ["blender"],
         "/usr/share/applications/audacity.desktop": ["audacity"],
         "/usr/share/applications/unityhub.desktop": ["unity hub", "unity"],
-        "/usr/share/applications/org.gnome.Nautilus.desktop": ["nautilus", "dossiers", "files"],
+        "/usr/share/applications/org.gnome.Nautilus.desktop": ["nautilus", "dossiers", "files", "file explorer", "file manager"],
         "/usr/share/applications/org.gnome.Maps.desktop": ["gnome maps", "gnome map", "maps", "carte"],
         "/usr/share/applications/org.gnome.Contacts.desktop": ["gnome contacts", "gnome contactes", "contacts"],
         "/usr/share/applications/org.gnome.Calendar.desktop": ["gnome calendar", "calendar", "agenda", "calendrier"],
