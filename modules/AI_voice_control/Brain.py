@@ -17,11 +17,10 @@ class Brain():
     cancel = False
     speaker = Speaker()
     config = configparser.ConfigParser()
-
+    config.read("settings/config.cfg")
     def __init__(self):
-        locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
-        
-        self.config.read("settings/config.cfg")
+        locale.setlocale(locale.LC_ALL, f'{self.config.get("General", "lang", fallback=False)}.utf8')
+
         self.use_logging = self.config.getboolean("Modules", "logging", fallback=False)
         self.use_ollama = self.config.getboolean("Modules", "ollama", fallback=False)
         self.use_speaker = self.config.getboolean("Modules", "speaker", fallback=False)

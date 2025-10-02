@@ -6,9 +6,12 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QFont, QIcon
 import math
-
+import configparser
 
 class MainWindow(QWidget):
+
+    config = configparser.ConfigParser()
+    config.read("settings/config.cfg")
 
     def __init__(self):
         super().__init__()
@@ -134,6 +137,9 @@ class MainWindow(QWidget):
 
     def on_button_clicked(self, language: str):
         self.announce(f"{language}")
+        self.config.set("General", "lang", self.languages[language]["lang"])
+        with open("settings/config.cfg", "w") as configfile:
+            self.config.write(configfile)
 
 
 if __name__ == "__main__":
