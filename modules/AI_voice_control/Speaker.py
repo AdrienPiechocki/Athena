@@ -1,7 +1,15 @@
 import subprocess
+import configparser
+import json
 
 class Speaker:
-    def __init__(self, voice="fr", speed=130, pitch=50, volume=100, gap=0):
+    config = configparser.ConfigParser()
+    config.read("settings/config.cfg")
+
+    with open(f"./lang/{config.get("General", "lang", fallback=False)}.json", 'r', encoding='utf-8') as f:
+        lang = json.load(f)
+
+    def __init__(self, voice=lang["lang"], speed=130, pitch=50, volume=100, gap=0):
         self.voice = voice
         self.speed = str(speed)
         self.pitch = str(pitch)
