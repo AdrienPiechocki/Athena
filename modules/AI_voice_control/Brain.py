@@ -10,9 +10,10 @@ import ollama
 import shlex
 import signal
 import difflib
+import pwd 
 
 class Brain():
-    name = os.getlogin()
+    name = pwd.getpwuid(os.geteuid())[0]
     cancel = False
     speaker = Speaker()
     config = configparser.ConfigParser()
@@ -88,16 +89,22 @@ class Brain():
             )
 
             full_response = ""
-            for chunk in response:
-                if hasattr(chunk, "message") and hasattr(chunk.message, "content"):
-                    full_response += chunk.message.content
+            
+            try:
+                for chunk in response:
+                    if hasattr(chunk, "message") and hasattr(chunk.message, "content"):
+                        full_response += chunk.message.content
 
-            self.update_history(prompt, full_response)
-            return full_response
+                self.update_history(prompt, full_response)
+                return full_response
+            
+            except ollama.ResponseError as e:
+                print(self.lang["ollama error"], e)
+                self.cancel = True
 
-
-        except requests.exceptions.RequestException as e:
-            return self.lang["ollama error"], e
+        except ollama.RequestError as e:
+            print(self.lang["ollama error"], e)
+            self.cancel = True
 
 
     def parse_desktop_file(self, path):
@@ -287,6 +294,8 @@ class Brain():
     def agent_loop(self, user_input:str):
         if self.use_ollama:
             ai_response_raw = self.query_ollama(user_input)
+            if not ai_response_raw:
+                return
             ai_response = self.clean_think(ai_response_raw)
             if "ACTION:" in ai_response:
                 ai_action = "ACTION:" + ai_response.split("ACTION:", 1)[-1]
