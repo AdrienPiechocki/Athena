@@ -43,7 +43,7 @@ class Speaker():
             ]
         else:
             cmd = [
-                "c:\Program Files\eSpeak NG\espeak-ng.exe",
+                "C://Program Files/eSpeak NG/espeak-ng.exe",
                 "-v", self.voice,
                 "-s", self.speed,
                 "-p", self.pitch,

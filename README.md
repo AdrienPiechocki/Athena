@@ -18,7 +18,9 @@ Some older laptops may not be able to launch the AI model due to RAM requirement
 - install Ollama and pull Qwen3
 
 ### Windows
-Not yet availiable
+- ``pip install -r requrements.txt``
+- install espeak-ng (for text to speech)
+- install Ollama and pull Qwen3
 
 ## Usage
 ``python main.py`` to run the app.
