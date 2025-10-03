@@ -38,5 +38,5 @@
     "ask username": "How should Athena call you?",
     "no username error": "Please enter a username!",
     "downloading vosk": "Downloading Vosk model (this may take a while)",
-    "downloaded vosk": "Vosk model downloaded"
+    "downloaded vosk": "Vosk model downloaded! Please restart Athena."
 }
