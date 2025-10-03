@@ -1,85 +1,127 @@
 {
     "firefox": {
-        "aliases": ["firefox", "navigateur", "browser"],
+        "exec_linux": "firefox",
+        "exec_windows": "C://Program Files/Mozilla Firefox/firefox.exe",
+        "aliases": ["firefox", "navigateur", "browser", "internet"],
         "args": ""
     },
     "blender": {
+        "exec_linux": "blender",
+        "exec_windows": "",
         "aliases": ["blender"],
         "args": ""
     },
     "audacity": {
+        "exec_linux": "audacity",
+        "exec_windows": "",
         "aliases": ["audacity"],
         "args": ""
     },
     "unityhub": {
+        "exec_linux": "unityhub",
+        "exec_windows": "",
         "aliases": ["unity hub", "unity"],
         "args": ""
     },
     "nautilus": {
+        "exec_linux": "nautilus",
+        "exec_windows": "",
         "aliases": ["nautilus", "dossiers", "files", "file explorer", "file manager"],
         "args": ""
     },
     "gnome-maps": {
+        "exec_linux": "gnome-maps",
+        "exec_windows": "",
         "aliases": ["gnome maps", "maps", "carte"],
         "args": ""
     },
     "gnome-contacts": {
+        "exec_linux": "gnome-contacts",
+        "exec_windows": "",
         "aliases": ["gnome contacts", "contacts"],
         "args": ""
     },
     "gnome-calendar": {
+        "exec_linux": "gnome-calendar",
+        "exec_windows": "",
         "aliases": ["gnome calendar", "calendar", "agenda", "calendrier"],
         "args": ""
     },
     "gnome-calculator": {
+        "exec_linux": "gnome-calculator",
+        "exec_windows": "",
         "aliases": ["gnome calculator", "calculator", "calculatrice"],
         "args": ""
     },
     "steam": {
+        "exec_linux": "steam",
+        "exec_windows": "",
         "aliases": ["steam"],
         "args": ""
     },
     "lutris": {
+        "exec_linux": "lutris",
+        "exec_windows": "",
         "aliases": ["lutris"],
         "args": ""
     },
     "code": {
+        "exec_linux": "code",
+        "exec_windows": "",
         "aliases": ["code", "visual studio", "visual studio code"],
         "args": ""
     },
-    "org.godotengine.Godot": {
+    "godot": {
+        "exec_linux": "org.godotengine.Godot",
+        "exec_windows": "",
         "aliases": ["godot"],
         "args": ""
     },
-    "org.gimp.GIMP": {
+    "gimp": {
+        "exec_linux": "org.gimp.GIMP",
+        "exec_windows": "",
         "aliases": ["gimp"],
         "args": ""
     },
-    "org.kde.krita": {
+    "krita": {
+        "exec_linux": "org.kde.krita",
+        "exec_windows": "",
         "aliases": ["krita"],
         "args": ""
     },
-    "io.github.shiftey.Desktop": {
+    "github-desktop": {
+        "exec_linux": "io.github.shiftey.Desktop",
+        "exec_windows": "",
         "aliases": ["github", "github desktop"],
         "args": ""
     },
-    "dev.vencord.Vesktop": {
+    "vesktop": {
+        "exec_linux": "dev.vencord.Vesktop",
+        "exec_windows": "",
         "aliases": ["discord"],
         "args": ""
     },
-    "page.kramo.Cartridges": {
+    "cartridges": {
+        "exec_linux": "page.kramo.Cartridges",
+        "exec_windows": "",
         "aliases": ["games library", "jeux", "cartouches"],
         "args": ""
     },
-    "md.obsidian.Obsidian": {
+    "obsidian": {
+        "exec_linux": "md.obsidian.Obsidian",
+        "exec_windows": "",
         "aliases": ["obsidian"],
         "args": ""
     },
-    "io.github.amit9838.mousam": {
+    "mousam": {
+        "exec_linux": "io.github.amit9838.mousam",
+        "exec_windows": "",
         "aliases": ["météo", "weather", "mousam"],
         "args": ""
     },
-    "com.obsproject.Studio": {
+    "obs": {
+        "exec_linux": "com.obsproject.Studio",
+        "exec_windows": "",
         "aliases": ["obs studio"],
         "args": ""
     } 

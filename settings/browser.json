@@ -1,0 +1,5 @@
+{
+    "exec_linux": "firefox",
+    "exec_windows": "C://Program Files/Mozilla Firefox/firefox.exe",
+    "search_url": "https://duckduckgo.com/?q="
+}

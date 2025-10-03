@@ -24,47 +24,48 @@ lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en
 with open(lang_file, 'r', encoding='utf-8') as f:
     lang = json.load(f)
 
-if system == "Windows":
-    apps_file = "settings/apps_windows.json"
-elif system == "Linux":
-    apps_file = "settings/apps_linux.json"
-else:
-    print("OS ERROR")
-    sys.exit(0)
-
+apps_file = os.path.join(BASE_DIR, "settings", "apps.json")
 with open(apps_file, 'r', encoding='utf-8') as f:
     ALLOWED_APPS = json.load(f)
+
+browser_file = os.path.join(BASE_DIR, "settings", "browser.json")
+with open(browser_file, 'r', encoding='utf-8') as f:
+    BROWSER = json.load(f)
 
 def run_application(app_name):
     global ALLOWED_APPS, lang, system
     app_name = app_name.lower()
 
+    if system == "Linux":
+        executable = "exec_linux"
+    else:
+        executable = "exec_windows"
+
     # Exact or partial search
     cmd = None
-    best_match = None
-    for command, data in ALLOWED_APPS.items():
+    for data in ALLOWED_APPS.values():
         # exact search
         if app_name in data["aliases"]:
-            cmd = command
+            cmd = data[executable]
             break
         # partial search
         for alias in data["aliases"]:
             if app_name in alias or alias in app_name:
-                cmd = command
-                best_match = alias
+                cmd = data[executable]
                 break
         if cmd:
             break
 
     # With no correspondence, fuzzy matching
     if not cmd:
-        all_aliases = [(alias, command) for command, data in ALLOWED_APPS.items() for alias in data["aliases"]]
-        matches = difflib.get_close_matches(app_name, [a for a, f in all_aliases], n=1, cutoff=0.7)
+        all_aliases = [alias for data in ALLOWED_APPS.values() for alias in data["aliases"]]
+        matches = difflib.get_close_matches(app_name, [a for a in all_aliases], n=1, cutoff=0.7)
         if matches:
             match_alias = matches[0]
-            cmd = next(f for a, f in all_aliases if a == match_alias)
-            best_match = match_alias
-    
+            for data in ALLOWED_APPS.values():
+                if match_alias in data["aliases"]:
+                    cmd = data[executable]
+                    break
     
     if cmd:
         try:
@@ -106,32 +107,34 @@ def close_application(app_name):
     global ALLOWED_APPS, lang, system
     app_name = app_name.lower()
 
+    if system == "Linux":
+        executable = "exec_linux"
+    else:
+        executable = "exec_windows"
+
     # Recherche exacte ou partielle
     cmd = None
-    best_match = None
-    data = None
-    for command, d in ALLOWED_APPS.items():
-        if app_name in d["aliases"]:
-            cmd = command
-            data = d
+    for data in ALLOWED_APPS.values():
+        if app_name in data["aliases"]:
+            cmd = data[executable]
             break
-        for alias in d["aliases"]:
+        for alias in data["aliases"]:
             if app_name in alias or alias in app_name:
-                cmd = command
-                best_match = alias
-                data = d
+                cmd = data[executable]
                 break
         if cmd:
             break
 
     # Fuzzy matching
     if not cmd:
-        all_aliases = [(alias, command, d) for command, d in ALLOWED_APPS.items() for alias in d["aliases"]]
-        matches = difflib.get_close_matches(app_name, [a for a, _, _ in all_aliases], n=1, cutoff=0.7)
+        all_aliases = [alias for data in ALLOWED_APPS.values() for alias in data["aliases"]]
+        matches = difflib.get_close_matches(app_name, [a for a in all_aliases], n=1, cutoff=0.7)
         if matches:
             match_alias = matches[0]
-            cmd, data = next((f, d) for a, f, d in all_aliases if a == match_alias)
-            best_match = match_alias
+            for data in ALLOWED_APPS.values():
+                if match_alias in data["aliases"]:
+                    cmd = data[executable]
+                    break
 
     if cmd:
         try:
@@ -146,7 +149,9 @@ def close_application(app_name):
                     command = f"flatpak kill {cmd}"
                     if cmd.split(".")[-1] in executables:
                         command = f"pkill -TERM {cmd}"
-
+                        if len(cmd) > 15:
+                            command = f"pkill -f {cmd}"
+                            
             # --- Windows ---
             elif system == "Windows":
                 cmd = cmd.split("/")[-1]
@@ -291,15 +296,12 @@ def set_focus(title):
         win32gui.EnumWindows(enum_windows_callback, None)
 
         if target_hwnd:
-            # Restaure la fenêtre si elle est réduite
             win32gui.ShowWindow(target_hwnd, win32con.SW_RESTORE)
 
-            # Simule Alt pressé pour autoriser le SetForegroundWindow
             win32api.keybd_event(win32con.VK_MENU, 0, 0, 0)  # Alt down
             time.sleep(0.05)
             win32api.keybd_event(win32con.VK_MENU, 0, win32con.KEYEVENTF_KEYUP, 0)  # Alt up
 
-            # Maintenant, essaie de mettre la fenêtre au premier plan
             win32gui.SetForegroundWindow(target_hwnd)
             return f"{lang['focused']} '{win32gui.GetWindowText(target_hwnd)}'"
         else:
@@ -307,3 +309,42 @@ def set_focus(title):
 
     else:
         return "OS ERROR"
+
+
+def browse(subject):
+    global BROWSER, lang, system
+
+    cmd = None
+
+    if system == "Linux":
+        cmd = f"{BROWSER['exec_linux']}"
+    else:
+        cmd = f"{BROWSER['exec_windows']}"
+
+    research = subject.replace(" ", "+")
+    cmd += f" {BROWSER['search_url']}{research}"
+
+    try:
+        exec_cmd = cmd.split(" ")
+        
+        # Linux
+        if system == "Linux":
+            subprocess.Popen(
+                exec_cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                start_new_session=True
+            )
+        # Windows
+        else:
+            subprocess.Popen(
+                exec_cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                creationflags=subprocess.CREATE_NEW_CONSOLE
+            )
+        return f"{lang['searching for']} {subject}"
+    except Exception as e:
+        return e
