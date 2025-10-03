@@ -6,8 +6,10 @@ import configparser
 import ollama
 import pwd 
 import textwrap
-from .functions import MyFunctions
 from datetime import datetime
+import sys
+sys.path.append(os.path.dirname(__file__))
+from .functions import *
 
 class Brain():
     name = pwd.getpwuid(os.geteuid())[0].capitalize()
@@ -15,7 +17,6 @@ class Brain():
     speaker = Speaker()
     config = configparser.ConfigParser()
     config.read("settings/config.cfg")
-    my_functions = MyFunctions()
     def __init__(self):
         self.use_logging = False
         self.use_speaker = False
@@ -126,17 +127,19 @@ class Brain():
                     params = " ".join(full_action.strip().split()[1:])
                     action = full_action.replace(params, "").strip()
                     if action in self.ALLOWED_ACTIONS:
-                        call = getattr(self.my_functions, self.config.get("Voice", f"function_{action}", fallback=""))
-                        if action == "terminate":
-                            func = call(cancel_callback=lambda: setattr(self, "cancel", True))
-                        elif params:
-                            func = call(params)
+                        import functions
+                        func_name = self.config.get("Voice", f"function_{action}", fallback="")
+                        call = functions.functions_registry.get(func_name)
+                        if call:
+                            if action == "terminate":
+                                func_result = call(cancel_callback=lambda: setattr(self, "cancel", True))
+                            elif params:
+                                func_result = call(params)
+                            else:
+                                func_result = call()
+                            ai_response = ai_response.replace(f'ACTION: {full_action}', func_result)
                         else:
-                            func = call()
-                        ai_response = ai_response.replace(f'ACTION: {full_action}', func)
-                        
-                    else:
-                        ai_response = self.lang["non authorized action"]
+                            ai_response = self.lang["non authorized action"]
 
             result = self.format_markdown(ai_response)
             self.log(result)
