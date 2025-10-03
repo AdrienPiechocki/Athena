@@ -7,13 +7,11 @@ from datetime import datetime
 from .Press import Press
 import configparser
 import ollama
-import shlex
-import signal
 import difflib
 import pwd 
 
 class Brain():
-    name = pwd.getpwuid(os.geteuid())[0]
+    name = pwd.getpwuid(os.geteuid())[0].capitalize()
     cancel = False
     speaker = Speaker()
     config = configparser.ConfigParser()
@@ -32,7 +30,7 @@ class Brain():
             self.ALLOWED_ACTIONS = self.config.get("Voice", "actions", fallback=[])
             self.SYSTEM_PROMPT = f"""
                 You are an voice commanded AI assistant called {self.lang["hotword"].capitalize()}. 
-                Your user is called {self.name.capitalize()} and speaks {self.lang["language"]}.
+                Your user is called {self.name} and speaks {self.lang["language"]}.
                 - If the user asks you to open an app, ONLY answer with :
                 ACTION: open <app_name>
                 - If the user asks you to close an app, ONLY answer with :
@@ -90,173 +88,117 @@ class Brain():
 
             full_response = ""
             
-            try:
-                for chunk in response:
-                    if hasattr(chunk, "message") and hasattr(chunk.message, "content"):
-                        full_response += chunk.message.content
+            for chunk in response:
+                if hasattr(chunk, "message") and hasattr(chunk.message, "content"):
+                    full_response += chunk.message.content
 
-                self.update_history(prompt, full_response)
-                return full_response
-            
-            except ollama.ResponseError as e:
-                print(self.lang["ollama error"], e)
-                self.cancel = True
+            self.update_history(prompt, full_response)
+            return full_response
 
-        except ollama.RequestError as e:
+        except Exception as e:
             print(self.lang["ollama error"], e)
             self.cancel = True
-
-
-    def parse_desktop_file(self, path):
-        """Lit un fichier .desktop et retourne la commande Exec nettoyée"""
-        config = configparser.ConfigParser(interpolation=None)
-        config.read(path)
-
-        if "Desktop Entry" not in config or "Exec" not in config["Desktop Entry"]:
-            raise ValueError(f"{path} {self.lang["no exec"]}")
-
-        exec_cmd = config["Desktop Entry"]["Exec"]
-        # cleans placeholders (%u, %f, %U, %F, etc.)
-        for placeholder in ("%u", "%U", "%f", "%F", "%i", "%c", "%k"):
-            exec_cmd = exec_cmd.replace(placeholder, "")
-        return exec_cmd.strip()
-
-    def find_real_binary(self, exec_cmd):
-        """Essaie de deviner le vrai binaire à partir de la commande Exec"""
-        parts = shlex.split(exec_cmd)
-
-        if not parts:
-            return None
-
-        # Case 1 : flatpak run org.foo.Bar
-        if parts[0].endswith("flatpak") and "run" in parts:
-            for part in reversed(parts):
-                if not part.startswith("--") and not part.startswith("@@") and not part.startswith("%"):
-                    app_id = part
-                    return ("flatpak", app_id)
-
-
-
-        # Case 2 : env FOO=bar myapp
-        if parts[0] == "env":
-            for i, token in enumerate(parts[1:], start=1):
-                if "=" not in token: 
-                    return ("binary", token)
-
-        # Case 3 : sh -c "commande ..."
-        if parts[0] in ("sh", "bash") and "-c" in parts:
-            idx = parts.index("-c")
-            if idx + 1 < len(parts):
-                inner_cmd = parts[idx + 1]
-                inner_parts = shlex.split(inner_cmd)
-                if inner_parts:
-                    return ("binary", inner_parts[0])
-
-        # Case 4 : AppImage
-        if parts[0].endswith(".AppImage") and os.path.isfile(parts[0]):
-            return ("binary", os.path.basename(parts[0]))
-
-        # Case 5 : KDE / Qt executables (kf5-xxx, qt5-xxx)
-        if parts[0].startswith(("kf5", "qt5")):
-            return ("binary", parts[0])
-
-        # Default case : first word
-        return ("binary", parts[0])
-
-
 
     def run_application(self, app_name):
         app_name = app_name.lower()
 
-       # Exact or partial search
-        desktop_file = None
+        # Exact or partial search
+        cmd = None
         best_match = None
-        for file, aliases in self.ALLOWED_APPS.items():
+        for command, data in self.ALLOWED_APPS.items():
             # exact search
-            if app_name in aliases:
-                desktop_file = file
+            if app_name in data["aliases"]:
+                cmd = command
                 break
             # partial search
-            for alias in aliases:
+            for alias in data["aliases"]:
                 if app_name in alias or alias in app_name:
-                    desktop_file = file
+                    cmd = command
                     best_match = alias
                     break
-            if desktop_file:
+            if cmd:
                 break
 
         # With no correspondence, fuzzy matching
-        if not desktop_file:
-            all_aliases = [(alias, file) for file, aliases in self.ALLOWED_APPS.items() for alias in aliases]
+        if not cmd:
+            all_aliases = [(alias, command) for command, data in self.ALLOWED_APPS.items() for alias in data["aliases"]]
+            matches = difflib.get_close_matches(app_name, [a for a, f in all_aliases], n=1, cutoff=0.8)
+            if matches:
+                match_alias = matches[0]
+                cmd = next(f for a, f in all_aliases if a == match_alias)
+                best_match = match_alias
+        
+        
+        if cmd:
+            try:
+                # Base command
+                exec_cmd = [cmd]
+
+                # Add args if any
+                if data and "args" in data and data["args"].strip():
+                    exec_cmd.extend(data["args"].split())
+                
+                # Launch
+                subprocess.Popen(
+                    exec_cmd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    stdin=subprocess.DEVNULL,
+                    start_new_session=True
+                )
+                return f"{self.lang['app']} {app_name} {self.lang['lauched']}."
+            except Exception as e:
+                return f"{self.lang['launch error']} {app_name} : {e}."
+        else:
+            return f"{self.lang['app']} {app_name} {self.lang['not authorized']}."
+
+    def close_application(self, app_name):
+        app_name = app_name.lower()
+
+        # Exact or partial search
+        cmd = None
+        best_match = None
+        for command, data in self.ALLOWED_APPS.items():
+            # exact search
+            if app_name in data["aliases"]:
+                cmd = command
+                break
+            # partial search
+            for alias in data["aliases"]:
+                if app_name in alias or alias in app_name:
+                    cmd = command
+                    best_match = alias
+                    break
+            if cmd:
+                break
+
+        # With no correspondence, fuzzy matching
+        if not cmd:
+            all_aliases = [(alias, command) for command, data in self.ALLOWED_APPS.items() for alias in data["aliases"]]
             matches = difflib.get_close_matches(app_name, [a for a, f in all_aliases], n=1, cutoff=0.8)
             if matches:
                 match_alias = matches[0]
                 desktop_file = next(f for a, f in all_aliases if a == match_alias)
                 best_match = match_alias
         
-        if desktop_file:
+
+        if cmd:
             try:
-                exec_cmd = self.parse_desktop_file(desktop_file)
-                cmd = shlex.split(exec_cmd)
-                subprocess.Popen(cmd, 
-                                stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL,
-                                stdin=subprocess.DEVNULL,
-                                close_fds=True,
-                                start_new_session=True
-                                )
-                return f"{self.lang["app"]} {app_name} {self.lang["lauched"]}."
-            except Exception as e:
-                return f"{self.lang["launch error"]} {app_name} : {e}."
-        else:
-            return f"{self.lang["app"]} {app_name} {self.lang["not authorized"]}."
-            
-    def close_application(self, app_name):
-        app_name = app_name.lower()
-
-        desktop_file = None
-        best_match = None
-        for file, aliases in self.ALLOWED_APPS.items():
-            if app_name in aliases:
-                desktop_file = file
-                break
-            for alias in aliases:
-                if app_name in alias or alias in app_name:
-                    desktop_file = file
-                    best_match = alias
-                    break
-            if desktop_file:
-                break
-
-        if not desktop_file:
-            # Fuzzy matching
-            all_aliases = [(alias, file) for file, aliases in self.ALLOWED_APPS.items() for alias in aliases]
-            matches = difflib.get_close_matches(app_name, [a for a, f in all_aliases], n=1, cutoff=0.8)
-            if matches:
-                match_alias = matches[0]
-                desktop_file = next(f for a, f in all_aliases if a == match_alias)
-                best_match = match_alias
-
-        if desktop_file:
-            try:
-                exec_cmd = self.parse_desktop_file(desktop_file)
-                target = self.find_real_binary(exec_cmd)
-
-                if not target:
-                    return f"{self.lang["binary not found"]}."
-
-                mode, value = target
+                command = f"pkill -TERM {cmd}"
+                executables = ["bin", "deb", "rpm", "etc", "sh", "AppImage"]
+                if len(cmd) > 15:
+                    command = f"pkill -f {cmd}"
+                if len(cmd.split(".")) >= 3:
+                    command = f"flatpak kill {cmd}"
+                    if cmd.split(".")[-1] in executables:
+                        command = f"pkill -TERM {cmd}"
+                
+                exec_cmd = command.split(" ") 
                 try: 
-                    if mode == "flatpak":
-                        subprocess.run(["flatpak", "kill", value], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, check=False)
-                    else:  # mode == "binary"
-                        if len(value) > 15:
-                            subprocess.run(["pkill", "-f", value], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, check=False)
-                        else:
-                            subprocess.run(["pkill", "-TERM", value], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, check=False)
+                    subprocess.run(exec_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, check=True)
                     return f"{self.lang["app"]} {app_name} {self.lang["closed"]}."
                 except subprocess.CalledProcessError:
-                    return f"{self.lang["process"]} '{app_name}' {self.lang["not found"]}."
+                    return f"{self.lang["process"]} {app_name} {self.lang["not found"]}."
 
             except Exception as e:
                 return f"{self.lang["close error"]} {app_name} : {e}."
