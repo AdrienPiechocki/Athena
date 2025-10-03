@@ -17,7 +17,7 @@ Some older laptops may not be able to launch the AI model due to RAM requirement
 - install Ollama and pull Qwen3
 
 ### Windows
-for now only on Linux
+Not yet availiable
 
 ## Usage
 ``python main.py`` to run the app.
