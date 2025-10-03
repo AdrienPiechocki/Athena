@@ -178,7 +178,7 @@ def press(place):
         clean(screenshot_path)
         return lang["screenshot unreadable"]
 
-    template_path = f"./modules/AI_voice_control/images/{place.lower()}.png"
+    template_path = f"./modules/voice/images/{place.lower()}.png"
     template = cv2.imread(template_path)
     if template is None:
         clean(screenshot_path)
