@@ -9,20 +9,33 @@ from datetime import datetime
 import difflib
 import os
 import pwd
+import platform
+import sys
+
+BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
 
 name = pwd.getpwuid(os.geteuid())[0].capitalize()
 config = configparser.ConfigParser()
-config.read("settings/config.cfg")
-    
+config.read(config_path)
+system = platform.system()
 
 with open(f"./lang/{config.get("General", "lang", fallback="en_US")}.json", 'r', encoding='utf-8') as f:
         lang = json.load(f)
-with open("settings/apps.json", 'r', encoding='utf-8') as f:
+
+if system == "Windows":
+    apps_file = "settings/apps_windows.json"
+elif system == "Linux":
+    apps_file = "settings/apps_linux.json"
+else:
+    print("OS ERROR")
+    sys.exit(0)
+
+with open(apps_file, 'r', encoding='utf-8') as f:
         ALLOWED_APPS = json.load(f)
 
-
 def run_application(app_name):
-    global ALLOWED_APPS, lang
+    global ALLOWED_APPS, lang, system
     app_name = app_name.lower()
 
     # Exact or partial search
@@ -61,14 +74,27 @@ def run_application(app_name):
             if data and "args" in data and data["args"].strip():
                 exec_cmd.extend(data["args"].split())
             
-            # Launch
-            subprocess.Popen(
-                exec_cmd,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                stdin=subprocess.DEVNULL,
-                start_new_session=True
-            )
+            # Linux
+            if system == "Linux":
+                subprocess.Popen(
+                    exec_cmd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    stdin=subprocess.DEVNULL,
+                    start_new_session=True
+                )
+            # Windows
+            elif system == "Windows":
+                subprocess.Popen(
+                    exec_cmd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    stdin=subprocess.DEVNULL,
+                    creationflags=subprocess.CREATE_NEW_CONSOLE
+                )
+
+            else:
+                return f"{lang['launch error']} {app_name} : OS ERROR."
             return f"{lang['app']} {app_name} {lang['lauched']}."
         except Exception as e:
             return f"{lang['launch error']} {app_name} : {e}."
@@ -76,58 +102,70 @@ def run_application(app_name):
         return f"{lang['app']} {app_name} {lang['not authorized']}."
 
 def close_application(app_name):
-    global ALLOWED_APPS, lang
+    global ALLOWED_APPS, lang, system
     app_name = app_name.lower()
 
-    # Exact or partial search
+    # Recherche exacte ou partielle
     cmd = None
     best_match = None
-    for command, data in ALLOWED_APPS.items():
-        # exact search
-        if app_name in data["aliases"]:
+    data = None
+    for command, d in ALLOWED_APPS.items():
+        if app_name in d["aliases"]:
             cmd = command
+            data = d
             break
-        # partial search
-        for alias in data["aliases"]:
+        for alias in d["aliases"]:
             if app_name in alias or alias in app_name:
                 cmd = command
                 best_match = alias
+                data = d
                 break
         if cmd:
             break
 
-    # With no correspondence, fuzzy matching
+    # Fuzzy matching
     if not cmd:
-        all_aliases = [(alias, command) for command, data in ALLOWED_APPS.items() for alias in data["aliases"]]
-        matches = difflib.get_close_matches(app_name, [a for a, f in all_aliases], n=1, cutoff=0.7)
+        all_aliases = [(alias, command, d) for command, d in ALLOWED_APPS.items() for alias in d["aliases"]]
+        matches = difflib.get_close_matches(app_name, [a for a, _, _ in all_aliases], n=1, cutoff=0.7)
         if matches:
             match_alias = matches[0]
-            cmd = next(f for a, f in all_aliases if a == match_alias)
+            cmd, data = next((f, d) for a, f, d in all_aliases if a == match_alias)
             best_match = match_alias
-    
 
     if cmd:
         try:
-            command = f"pkill -TERM {cmd}"
-            executables = ["bin", "deb", "rpm", "etc", "sh", "AppImage"]
-            if len(cmd) > 15:
-                command = f"pkill -f {cmd}"
-            if len(cmd.split(".")) >= 3:
-                command = f"flatpak kill {cmd}"
-                if cmd.split(".")[-1] in executables:
-                    command = f"pkill -TERM {cmd}"
-            
-            exec_cmd = command.split(" ") 
-            try: 
+            # --- Linux ---
+            if system == "Linux":
+                command = f"pkill -TERM {cmd}"
+                executables = ["bin", "deb", "rpm", "etc", "sh", "AppImage"]
+
+                if len(cmd) > 15:
+                    command = f"pkill -f {cmd}"
+                if len(cmd.split(".")) >= 3:
+                    command = f"flatpak kill {cmd}"
+                    if cmd.split(".")[-1] in executables:
+                        command = f"pkill -TERM {cmd}"
+
+            # --- Windows ---
+            elif system == "Windows":
+                command = f"taskkill /IM {cmd} /F"
+
+            else:
+                return f"{lang['close error']} {app_name} : OS ERROR."
+
+            # Exécution
+            exec_cmd = command.split(" ")
+            try:
                 subprocess.run(exec_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, check=True)
-                return f"{lang["app"]} {app_name} {lang["closed"]}."
+                return f"{lang['app']} {app_name} {lang['closed']}."
             except subprocess.CalledProcessError:
-                return f"{lang["process"]} {app_name} {lang["not found"]}."
+                return f"{lang['process']} {app_name} {lang['not found']}."
 
         except Exception as e:
-            return f"{lang["close error"]} {app_name} : {e}."
+            return f"{lang['close error']} {app_name} : {e}."
     else:
-        return f"{lang["app"]} {app_name} {lang["not authorized"]}."
+        return f"{lang['app']} {app_name} {lang['not authorized']}."
+
 
 def get_time():
     global lang
@@ -146,78 +184,105 @@ def terminate(cancel_callback):
     cancel_callback()
     return f"{lang["goodbye"]} {name}"
 
-
-def clean(path):
-    try:
-        os.remove(path)
-    except:
-        pass
-
 def press(place):
     global lang
+
     # -----------------------------
-    # Take screenshot with flameshot
+    # Capture écran
     # -----------------------------
-    screenshot_path = "/tmp/screen.png"
-    clean(screenshot_path)
+    screenshot_path = os.path.join(os.getcwd(), "screen.png")
+    if os.path.exists(screenshot_path):
+        os.remove(screenshot_path)
+
+    system = platform.system()
+
     try:
-        subprocess.run(["flameshot", "full", "--path", screenshot_path], check=True)
-    except subprocess.CalledProcessError:
-        return lang["flameshot error"]
+        if system == "Linux":
+            # Linux -> flameshot
+            subprocess.run(["flameshot", "full", "--path", screenshot_path], check=True)
+        elif system == "Windows":
+            # Windows -> pyautogui
+            img = pyautogui.screenshot()
+            img.save(screenshot_path)
+        else:
+            return f"{lang['screenshot not supported']} ({system})"
+    except Exception:
+        return lang["flameshot error"] if system == "Linux" else lang["screenshot error"]
 
     if not os.path.exists(screenshot_path):
         return lang["screenshot not found"]
 
-    time.sleep(0.2)  # make sure file is ready
+    time.sleep(0.2)
 
     # -----------------------------
-    # Load images to OpenCV
+    # Charger images avec OpenCV
     # -----------------------------
     screen = cv2.imread(screenshot_path)
     if screen is None:
-        clean(screenshot_path)
+        os.remove(screenshot_path)
         return lang["screenshot unreadable"]
 
     template_path = f"./modules/voice/images/{place.lower()}.png"
     template = cv2.imread(template_path)
     if template is None:
-        clean(screenshot_path)
+        os.remove(screenshot_path)
         return lang["patern unreadable"]
+
     # -----------------------------
     # Multi-scale Template Matching
     # -----------------------------
     threshold = 0.9
     found = None
 
-    for scale in np.linspace(0.01, 1.0):  # tries different sizes (10% to 100%)
+    for scale in np.linspace(0.01, 1.0):  # 1% à 100%
         resized = cv2.resize(template, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
         h, w = resized.shape[:2]
 
         if h > screen.shape[0] or w > screen.shape[1]:
-            continue  # too big, skip
+            continue
 
         result = cv2.matchTemplate(screen, resized, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
         if max_val > threshold:
             found = (max_val, max_loc, (w, h))
-            break  # found with enough confidence, stop
+            break
 
     if found:
         max_val, top_left, (w, h) = found
         center_x = top_left[0] + w // 2
         center_y = top_left[1] + h // 2
         pyautogui.click(center_x, center_y)
-        result = f"{place} {lang["clicked"]}."
+        result = f"{place} {lang['clicked']}."
     else:
-        result = f"{place} {lang["not found"]}."
-    clean(screenshot_path)
+        result = f"{place} {lang['not found']}."
+
+    os.remove(screenshot_path)
     return result
 
 def set_focus(title):
-    global lang
-    result = os.system(f'wmctrl -a "{title}"')
-    if result != 0:
-        return f"{lang["can't find window"]} '{title}'. {lang["install wmctrl"]}."
+    global lang, system
+
+    if system == "Linux":
+
+        result = os.system(f'wmctrl -a "{title}"')
+        if result != 0:
+            return f"{lang["can't find window"]} '{title}'. {lang["install wmctrl"]}."
+        else:
+            return f"{lang["focused"]} {title}"
+    
+
+    elif system == "Windows":
+        import win32gui
+        import win32con
+
+        def set_focus(title):
+            hwnd = win32gui.FindWindow(None, title)
+            if hwnd:
+                win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+                win32gui.SetForegroundWindow(hwnd)
+                return f"{lang["focused"]} {title}"
+            else:
+                return f"{lang["can't find window"]} '{title}'."
     else:
-        return f"{lang["focused"]} {title}"
+        return "OS ERROR"

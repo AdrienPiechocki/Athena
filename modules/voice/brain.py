@@ -12,18 +12,26 @@ sys.path.append(os.path.dirname(__file__))
 from .functions import *
 
 class Brain():
+    BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+    config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
     name = pwd.getpwuid(os.geteuid())[0].capitalize()
     cancel = False
     speaker = Speaker()
     config = configparser.ConfigParser()
-    config.read("settings/config.cfg")
+    config.read(config_path)
+    log_dir = os.path.join("logs")
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, "history.log")
+    lang_dir = os.path.join(BASE_DIR, "lang")
+    lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
+    
     def __init__(self):
         self.use_logging = False
         self.use_speaker = False
         self.hotword = ""
         self.use_ollama = self.config.getboolean("Modules", "voice", fallback=False)
         if self.use_ollama:
-            with open(f"./lang/{self.config.get("General", "lang", fallback="en_US")}.json", 'r', encoding='utf-8') as f:
+            with open(self.lang_file, 'r', encoding='utf-8') as f:
                 self.lang = json.load(f)
             self.hotword = self.lang["hotword"]
             self.use_logging = self.config.getboolean("Voice", "logging", fallback=False)
@@ -47,19 +55,16 @@ class Brain():
                 /no_think
                 """)
             self.conversation_history = [{"role": "system", "content": (self.SYSTEM_PROMPT)}]
-            with open("modules/voice/history.log", 'a') as h:
+            with open(self.log_file, 'a') as h:
                 h.write(f"{datetime.now()} [NEW SESSIONS STARTED] \n")
 
-            with open("settings/apps.json", 'r', encoding='utf-8') as f:
-                self.ALLOWED_APPS = json.load(f)
 
     # ---------------------- FUNCTIONS ----------------------
 
     def update_history(self, prompt, response): 
-        path = "modules/voice/history.log"
 
         # add new info (from current session)
-        with open(path, 'a') as h:
+        with open(self.log_file, 'a') as h:
             h.write(f"{datetime.now()} PROMPT: {prompt} \n{datetime.now()} RESPONSE: {self.clean_think(response)} \n")
 
         self.conversation_history.append({

@@ -1,12 +1,19 @@
 import subprocess
 import configparser
 import json
+import os
+import sys
 
-class Speaker:
+class Speaker():
+    BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+    config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
+
     config = configparser.ConfigParser()
-    config.read("settings/config.cfg")
+    config.read(config_path)
 
-    with open(f"./lang/{config.get("General", "lang", fallback=False)}.json", 'r', encoding='utf-8') as f:
+    lang_dir = os.path.join(BASE_DIR, "lang")
+    lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
+    with open(lang_file, 'r', encoding='utf-8') as f:
         lang = json.load(f)
 
     def __init__(self, voice=lang["lang"], speed=130, pitch=50, volume=100, gap=0):

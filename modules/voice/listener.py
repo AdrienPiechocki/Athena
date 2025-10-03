@@ -6,16 +6,19 @@ import sys
 from .brain import Brain
 from vosk import Model, KaldiRecognizer, SetLogLevel
 import configparser
-
+import os
 
 class Listener():
-
+    BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+    config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
     SetLogLevel(-1)
 
     config = configparser.ConfigParser()
-    config.read("settings/config.cfg")
+    config.read(config_path)
 
-    with open(f"./lang/{config.get("General", "lang", fallback=False)}.json", 'r', encoding='utf-8') as f:
+    lang_dir = os.path.join(BASE_DIR, "lang")
+    lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
+    with open(lang_file, 'r', encoding='utf-8') as f:
         lang = json.load(f)
 
     def __init__(self):

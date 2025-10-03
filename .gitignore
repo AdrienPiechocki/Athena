@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 vosk/
+logs/
 
 # C extensions
 *.so

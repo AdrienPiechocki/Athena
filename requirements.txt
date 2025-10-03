@@ -3,6 +3,7 @@ numpy
 pyautogui
 configparser
 PySide6
+PySide6-Addons
 sounddevice
 vosk
 pynput

@@ -11,13 +11,20 @@ import json
 import os
 import requests
 import zipfile
+import pathlib
+import subprocess
+import platform
+
+BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
+system = platform.system()
 
 class SelectLanguage(QWidget):
-
+    global config_path
     language_selected = Signal(str)
 
     config = configparser.ConfigParser()
-    config.read("settings/config.cfg")
+    config.read(config_path)
 
     def __init__(self):
         super().__init__()
@@ -61,11 +68,11 @@ class SelectLanguage(QWidget):
 
         self.languages = {
             "Français": {
-                "icon": "./data/flags/fr.svg",
+                "icon": os.path.join("data", "flags", "fr.svg"),
                 "lang": "fr_FR"
             },
             "English": {
-                "icon": "./data/flags/us.svg",
+                "icon": os.path.join("data", "flags", "us.svg"),
                 "lang": "en_US"
             }
         }
@@ -100,13 +107,15 @@ class SelectLanguage(QWidget):
         super().resizeEvent(event)
         size = self.scroll_area.height() // 15
         font = QFont("Arial", size)
+        if not font.exactMatch():
+            font = QFont("Sans Serif", size)
         self.label.setFont(font)
         for btn in self.buttons:
             btn.setFont(font)
 
     def on_button_clicked(self, language: str):
         self.config.set("General", "lang", self.languages[language]["lang"])
-        with open("settings/config.cfg", "w") as configfile:
+        with open(config_path, "w") as configfile:
             self.config.write(configfile)
         self.language_selected.emit(language)
 
@@ -118,8 +127,9 @@ class SelectModules(QWidget):
     def __init__(self):
         super().__init__()
 
+        global config_path
         self.config = configparser.ConfigParser()
-        self.config.read("settings/config.cfg")
+        self.config.read(config_path)
         self.lang = {}
 
         # Main layout
@@ -166,9 +176,11 @@ class SelectModules(QWidget):
         self.scroll_layout.addWidget(self.next_button)
 
     def load_language(self):
-        self.config.read("settings/config.cfg")
+        global BASE_DIR, config_path
+        self.config.read(config_path)
         lang_code = self.config.get("General", "lang", fallback="en_US")
-        with open(f"./lang/{lang_code}.json", "r", encoding="utf-8") as f:
+        lang_file = os.path.join(BASE_DIR, "lang", f"{lang_code}.json")
+        with open(lang_file, "r", encoding="utf-8") as f:
             self.lang = json.load(f)
 
         self.label.setText(self.lang["module selection"])
@@ -207,6 +219,8 @@ class SelectModules(QWidget):
         super().resizeEvent(event)
         size = self.scroll_area.height() // 15
         font = QFont("Arial", size)
+        if not font.exactMatch():
+            font = QFont("Sans Serif", size)
         self.label.setFont(font)
         for cb in self.checkboxes:
             cb.setFont(font)
@@ -228,7 +242,7 @@ class SelectModules(QWidget):
             self.config.set("Modules", "slider", "true")
         else:
             self.config.set("Modules", "slider", "false")
-        with open("settings/config.cfg", "w") as configfile:
+        with open(config_path, "w") as configfile:
             self.config.write(configfile)
         self.modules_validated.emit(selected)
 
@@ -239,8 +253,9 @@ class SelectModules(QWidget):
 class InstallVosk(QWidget):
     def __init__(self):
         super().__init__()
+        global config_path
         self.config = configparser.ConfigParser()
-        self.config.read("settings/config.cfg")
+        self.config.read(config_path)
         self.lang = {}
 
         # Main layout
@@ -272,9 +287,11 @@ class InstallVosk(QWidget):
         self.scroll_layout.addWidget(self.label)
 
     def load_language(self):
-        self.config.read("settings/config.cfg")
+        global BASE_DIR, config_path
+        self.config.read(config_path)
         lang_code = self.config.get("General", "lang", fallback="en_US")
-        with open(f"./lang/{lang_code}.json", "r", encoding="utf-8") as f:
+        lang_file = os.path.join(BASE_DIR, "lang", f"{lang_code}.json")
+        with open(lang_file, "r", encoding="utf-8") as f:
             self.lang = json.load(f)
 
         self.label.setText(self.lang["downloading vosk"])
@@ -284,16 +301,19 @@ class InstallVosk(QWidget):
         super().resizeEvent(event)
         size = self.scroll_area.height() // 15
         font = QFont("Arial", size)
+        if not font.exactMatch():
+            font = QFont("Sans Serif", size)
         self.label.setFont(font)
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
+        global config_path
         self.setWindowTitle("Athena")
         self.resize(800, 600)
 
         self.config = configparser.ConfigParser()
-        self.config.read("settings/config.cfg")
+        self.config.read(config_path)
         self.lang = {}
 
         # Layout principal
@@ -383,12 +403,15 @@ class MainWindow(QWidget):
         self.show_page(self.modules_selection)
     
     def load_language(self):
-        self.config.read("settings/config.cfg")
+        global BASE_DIR, config_path
+        self.config.read(config_path)
         lang_code = self.config.get("General", "lang", fallback="en_US")
-        with open(f"./lang/{lang_code}.json", "r", encoding="utf-8") as f:
+        lang_file = os.path.join(BASE_DIR, "lang", f"{lang_code}.json")
+        with open(lang_file, "r", encoding="utf-8") as f:
             self.lang = json.load(f)
 
     def next(self, selected_modules):
+        global system
         print(selected_modules)
         self.load_language()
         if self.lang["voice module"] in selected_modules:
@@ -404,21 +427,24 @@ class MainWindow(QWidget):
             
         print("done")
         self.config.set("General", "wizard", "true")
-        with open("settings/config.cfg", "w") as configfile:
+        with open(config_path, "w") as configfile:
             self.config.write(configfile)
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
+        if system == "Windows":
+            subprocess.Popen([sys.executable] + sys.argv, close_fds=True, creationflags=subprocess.DETACHED_PROCESS)
+        else:
+            subprocess.Popen([sys.executable] + sys.argv, close_fds=True)
+        sys.exit()
 
     
     def download_vosk_model(self, url):
 
         local_zip = url.split("/")[-1]
         filename = local_zip[:-4]
-        extract_folder = f"./vosk/"
+        extract_folder = os.path.join(BASE_DIR, "vosk")
 
-        if os.path.exists(extract_folder+filename+"/"):
-            self.config.set("Voice", "vosk", extract_folder+filename)
-            with open("settings/config.cfg", "w") as configfile:
+        if os.path.exists(os.path.join(extract_folder, filename)):
+            self.config.set("Voice", "vosk", os.path.join(extract_folder, filename))
+            with open(config_path, "w") as configfile:
                 self.config.write(configfile)
             return
 
@@ -449,8 +475,8 @@ class MainWindow(QWidget):
         with zipfile.ZipFile(local_zip, "r") as zip_ref:
             zip_ref.extractall(extract_folder)
 
-        self.config.set("Voice", "vosk", extract_folder+filename)
-        with open("settings/config.cfg", "w") as configfile:
+        self.config.set("Voice", "vosk", os.path.join(extract_folder, filename))
+        with open(config_path, "w") as configfile:
             self.config.write(configfile)
         os.remove(local_zip)
         progress.setValue(100)
