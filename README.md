@@ -4,6 +4,9 @@ For now, you can use your voice to command the AI and ask questions.
 
 **For now, it only speaks and understands French or English**
 
+## Warning
+Some older laptops may not be able to launch the AI model due to RAM requirements...
+
 ## Installation 
 
 ### Linux
