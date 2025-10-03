@@ -13,11 +13,9 @@ import requests
 import zipfile
 import pathlib
 import subprocess
-import platform
 
 BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
 config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
-system = platform.system()
 
 class SelectLanguage(QWidget):
     global config_path
@@ -411,7 +409,6 @@ class MainWindow(QWidget):
             self.lang = json.load(f)
 
     def next(self, selected_modules):
-        global system
         print(selected_modules)
         self.load_language()
         if self.lang["voice module"] in selected_modules:
@@ -429,11 +426,7 @@ class MainWindow(QWidget):
         self.config.set("General", "wizard", "true")
         with open(config_path, "w") as configfile:
             self.config.write(configfile)
-        if system == "Windows":
-            subprocess.Popen([sys.executable] + sys.argv, close_fds=True, creationflags=subprocess.DETACHED_PROCESS)
-        else:
-            subprocess.Popen([sys.executable] + sys.argv, close_fds=True)
-        sys.exit()
+        sys.exit(0)
 
     
     def download_vosk_model(self, url):
