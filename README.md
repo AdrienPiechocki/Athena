@@ -17,7 +17,8 @@ For now, you can use your voice to command the AI and ask questions.
 for now only on Linux
 
 ## Usage
-``python main.py`` to run the app
+``python main.py`` to run the app.
+
 When launching for the first time, you will be prompted by the installation wizard. Follow it's steps to complete the installation.
 
 ### Voiced commands
