@@ -23,7 +23,7 @@ class Listener():
 
     def __init__(self):
         
-        print(f"{self.lang["starting"]}...")
+        print(f"{self.lang['starting']}...")
 
         self.model = Model(self.config.get("Voice", "vosk", fallback=False))
         self.vosk_rate = 48000

@@ -4,7 +4,6 @@ import re
 from .speaker import Speaker
 import configparser
 import ollama
-import pwd 
 import textwrap
 from datetime import datetime
 import sys
@@ -14,7 +13,7 @@ from .functions import *
 class Brain():
     BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
     config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
-    name = pwd.getpwuid(os.geteuid())[0].capitalize()
+    name = "Adrien"
     cancel = False
     speaker = Speaker()
     config = configparser.ConfigParser()
@@ -39,8 +38,8 @@ class Brain():
             actions_str = self.config.get("Voice", "actions", fallback="")
             self.ALLOWED_ACTIONS = [a.strip() for a in actions_str.split(",")]
             self.SYSTEM_PROMPT = textwrap.dedent(f"""
-                You are an voice commanded AI assistant called {self.lang["hotword"].capitalize()}. 
-                Your user is called {self.name} and speaks {self.lang["language"]}.
+                You are an voice commanded AI assistant called {self.lang['hotword'].capitalize()}. 
+                Your user is called {self.name} and speaks {self.lang['language']}.
                 """)
                 
             for action in self.ALLOWED_ACTIONS:

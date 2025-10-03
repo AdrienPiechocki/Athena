@@ -14,6 +14,7 @@ Some older laptops may not be able to launch the AI model due to RAM requirement
 - ``pip install -r requrements.txt``
 - install flameshot (to take screenshot for image recognition)
 - install wmctrl (to set focus on apps when asked to)
+- install espeak-ng (for text to speech)
 - install Ollama and pull Qwen3
 
 ### Windows

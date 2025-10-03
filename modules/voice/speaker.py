@@ -3,6 +3,7 @@ import configparser
 import json
 import os
 import sys
+import platform
 
 class Speaker():
     BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -15,6 +16,8 @@ class Speaker():
     lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
     with open(lang_file, 'r', encoding='utf-8') as f:
         lang = json.load(f)
+    
+    system = platform.system()
 
     def __init__(self, voice=lang["lang"], speed=130, pitch=50, volume=100, gap=0):
         self.voice = voice
@@ -28,17 +31,27 @@ class Speaker():
         # If a process in ongoing, wait for it to finish
         if self.process and self.process.poll() is None:
             self.process.wait()
+        if self.system == "Linux":
+            cmd = [
+                "espeak-ng",
+                "-v", self.voice,
+                "-s", self.speed,
+                "-p", self.pitch,
+                "-a", self.volume,
+                "-g", self.gap,
+                text
+            ]
+        else:
+            cmd = [
+                "c:\Program Files\eSpeak NG\espeak-ng.exe",
+                "-v", self.voice,
+                "-s", self.speed,
+                "-p", self.pitch,
+                "-a", self.volume,
+                "-g", self.gap,
+                text
+            ]
 
-        cmd = [
-            "espeak-ng",
-            "-v", self.voice,
-            "-s", self.speed,
-            "-p", self.pitch,
-            "-a", self.volume,
-            "-g", self.gap,
-            text
-        ]
-        
         self.process = subprocess.Popen(cmd)
 
     def stop(self):

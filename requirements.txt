@@ -8,3 +8,4 @@ sounddevice
 vosk
 pynput
 ollama
+pywin32

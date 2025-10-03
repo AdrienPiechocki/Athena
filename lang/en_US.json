@@ -26,7 +26,7 @@
     "patern unreadable": "Error : can't read patern image",
     "clicked": "clicked",
     "goodbye": "Goodbye",
-    "can't find window": "Can't find window",
+    "cant find window": "Can't find window",
     "install wmctrl": "Make sure wmctrl is installed",
     "focused": "Focused",
     

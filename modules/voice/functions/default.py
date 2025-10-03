@@ -8,20 +8,21 @@ import json
 from datetime import datetime
 import difflib
 import os
-import pwd
 import platform
 import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
 config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
 
-name = pwd.getpwuid(os.geteuid())[0].capitalize()
+name = "Adrien"
 config = configparser.ConfigParser()
 config.read(config_path)
 system = platform.system()
 
-with open(f"./lang/{config.get("General", "lang", fallback="en_US")}.json", 'r', encoding='utf-8') as f:
-        lang = json.load(f)
+lang_dir = os.path.join(BASE_DIR, "lang")
+lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
+with open(lang_file, 'r', encoding='utf-8') as f:
+    lang = json.load(f)
 
 if system == "Windows":
     apps_file = "settings/apps_windows.json"
@@ -32,7 +33,7 @@ else:
     sys.exit(0)
 
 with open(apps_file, 'r', encoding='utf-8') as f:
-        ALLOWED_APPS = json.load(f)
+    ALLOWED_APPS = json.load(f)
 
 def run_application(app_name):
     global ALLOWED_APPS, lang, system
@@ -148,6 +149,7 @@ def close_application(app_name):
 
             # --- Windows ---
             elif system == "Windows":
+                cmd = cmd.split("/")[-1]
                 command = f"taskkill /IM {cmd} /F"
 
             else:
@@ -171,18 +173,18 @@ def get_time():
     global lang
     now = datetime.now()
     current_time = now.strftime("%H:%M")
-    return f"{lang["time"]} {current_time}."
+    return f"{lang['time']} {current_time}."
 
 def get_day():
     global lang
     now = datetime.today()
     current_time = now.strftime("%A %d %B %Y")
-    return f"{lang["day"]} {current_time}."
+    return f"{lang['day']} {current_time}."
 
 def terminate(cancel_callback):
     global lang, name
     cancel_callback()
-    return f"{lang["goodbye"]} {name}"
+    return f"{lang['goodbye']} {name}"
 
 def press(place):
     global lang
@@ -267,22 +269,41 @@ def set_focus(title):
 
         result = os.system(f'wmctrl -a "{title}"')
         if result != 0:
-            return f"{lang["can't find window"]} '{title}'. {lang["install wmctrl"]}."
+            return f"{lang['cant find window']} '{title}'. {lang['install wmctrl']}."
         else:
-            return f"{lang["focused"]} {title}"
+            return f"{lang['focused']} {title}"
     
 
     elif system == "Windows":
         import win32gui
         import win32con
+        import win32api
 
-        def set_focus(title):
-            hwnd = win32gui.FindWindow(None, title)
-            if hwnd:
-                win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
-                win32gui.SetForegroundWindow(hwnd)
-                return f"{lang["focused"]} {title}"
-            else:
-                return f"{lang["can't find window"]} '{title}'."
+        target_hwnd = None
+
+        def enum_windows_callback(hwnd, _):
+            nonlocal target_hwnd
+            if win32gui.IsWindowVisible(hwnd):
+                window_title = win32gui.GetWindowText(hwnd)
+                if title.lower() in window_title.lower():
+                    target_hwnd = hwnd
+
+        win32gui.EnumWindows(enum_windows_callback, None)
+
+        if target_hwnd:
+            # Restaure la fenêtre si elle est réduite
+            win32gui.ShowWindow(target_hwnd, win32con.SW_RESTORE)
+
+            # Simule Alt pressé pour autoriser le SetForegroundWindow
+            win32api.keybd_event(win32con.VK_MENU, 0, 0, 0)  # Alt down
+            time.sleep(0.05)
+            win32api.keybd_event(win32con.VK_MENU, 0, win32con.KEYEVENTF_KEYUP, 0)  # Alt up
+
+            # Maintenant, essaie de mettre la fenêtre au premier plan
+            win32gui.SetForegroundWindow(target_hwnd)
+            return f"{lang['focused']} '{win32gui.GetWindowText(target_hwnd)}'"
+        else:
+            return f"{lang['cant find window']} '{title}'."
+
     else:
         return "OS ERROR"
