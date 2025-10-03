@@ -26,7 +26,10 @@
     "patern unreadable": "Error : can't read patern image",
     "clicked": "clicked",
     "goodbye": "Goodbye",
-
+    "can't find window": "Can't find window",
+    "install wmctrl": "Make sure wmctrl is installed",
+    "focused": "Focused",
+    
     "module selection":  "Which modules do you want Athena to use?",
     "voice module": "Voice",
     "slider module": "Slider",

@@ -26,6 +26,9 @@
     "patern unreadable": "Erreur : impossible de lire le paterne",
     "clicked": "cliqué",
     "goodbye": "Aurevoir",
+    "can't find window": "Impossible de trouver la fenêtre de",
+    "install wmctrl": "Veillez a avoir installé wmctrl",
+    "focused": "Mise en avant de",
 
     "module selection":  "Quels modules voulez vous qu'Athéna utilise ?",
     "voice module": "Voix",

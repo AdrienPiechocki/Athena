@@ -5,8 +5,9 @@ config = configparser.ConfigParser()
 config.read("settings/config.cfg")
 
 if config.get("General", "wizard", fallback=False) == "true":
-    from modules.AI_voice_control import listener
-    listener.main()
+    if config.get("Modules", "voice", fallback=False) == "true":
+        from modules.voice.listener import Listener
+        Listener()
 else:
     from wizard import *
     app = QApplication(sys.argv)

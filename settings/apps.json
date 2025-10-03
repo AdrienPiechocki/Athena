@@ -1,88 +1,87 @@
 {
-    "ALLOWED_APPS": {
-        "firefox": {
-            "aliases": ["firefox", "navigateur", "browser"],
-            "args": ""
-        },
-        "blender": {
-            "aliases": ["blender"],
-            "args": ""
-        },
-        "audacity": {
-            "aliases": ["audacity"],
-            "args": ""
-        },
-        "unityhub": {
-            "aliases": ["unity hub", "unity"],
-            "args": ""
-        },
-        "nautilus": {
-            "aliases": ["nautilus", "dossiers", "files", "file explorer", "file manager"],
-            "args": ""
-        },
-        "gnome-maps": {
-            "aliases": ["gnome maps", "maps", "carte"],
-            "args": ""
-        },
-        "gnome-contacts": {
-            "aliases": ["gnome contacts", "contacts"],
-            "args": ""
-        },
-        "gnome-calendar": {
-            "aliases": ["gnome calendar", "calendar", "agenda", "calendrier"],
-            "args": ""
-        },
-        "gnome-calculator": {
-            "aliases": ["gnome calculator", "calculator", "calculatrice"],
-            "args": ""
-        },
-        "steam": {
-            "aliases": ["steam"],
-            "args": ""
-        },
-        "lutris": {
-            "aliases": ["lutris"],
-            "args": ""
-        },
-        "code": {
-            "aliases": ["code", "visual studio", "visual studio code"],
-            "args": ""
-        },
-        "org.godotengine.Godot": {
-            "aliases": ["godot"],
-            "args": ""
-        },
-        "org.gimp.GIMP": {
-            "aliases": ["gimp"],
-            "args": ""
-        },
-        "org.kde.krita": {
-            "aliases": ["krita"],
-            "args": ""
-        },
-        "io.github.shiftey.Desktop": {
-            "aliases": ["github", "github desktop"],
-            "args": ""
-        },
-        "dev.vencord.Vesktop": {
-            "aliases": ["discord"],
-            "args": ""
-        },
-        "page.kramo.Cartridges": {
-            "aliases": ["games library", "jeux", "cartouches"],
-            "args": ""
-        },
-        "md.obsidian.Obsidian": {
-            "aliases": ["obsidian"],
-            "args": ""
-        },
-        "io.github.amit9838.mousam": {
-            "aliases": ["météo", "weather", "mousam"],
-            "args": ""
-        },
-        "com.obsproject.Studio": {
-            "aliases": ["obs studio"],
-            "args": ""
-        } 
-    }
+    "firefox": {
+        "aliases": ["firefox", "navigateur", "browser"],
+        "args": ""
+    },
+    "blender": {
+        "aliases": ["blender"],
+        "args": ""
+    },
+    "audacity": {
+        "aliases": ["audacity"],
+        "args": ""
+    },
+    "unityhub": {
+        "aliases": ["unity hub", "unity"],
+        "args": ""
+    },
+    "nautilus": {
+        "aliases": ["nautilus", "dossiers", "files", "file explorer", "file manager"],
+        "args": ""
+    },
+    "gnome-maps": {
+        "aliases": ["gnome maps", "maps", "carte"],
+        "args": ""
+    },
+    "gnome-contacts": {
+        "aliases": ["gnome contacts", "contacts"],
+        "args": ""
+    },
+    "gnome-calendar": {
+        "aliases": ["gnome calendar", "calendar", "agenda", "calendrier"],
+        "args": ""
+    },
+    "gnome-calculator": {
+        "aliases": ["gnome calculator", "calculator", "calculatrice"],
+        "args": ""
+    },
+    "steam": {
+        "aliases": ["steam"],
+        "args": ""
+    },
+    "lutris": {
+        "aliases": ["lutris"],
+        "args": ""
+    },
+    "code": {
+        "aliases": ["code", "visual studio", "visual studio code"],
+        "args": ""
+    },
+    "org.godotengine.Godot": {
+        "aliases": ["godot"],
+        "args": ""
+    },
+    "org.gimp.GIMP": {
+        "aliases": ["gimp"],
+        "args": ""
+    },
+    "org.kde.krita": {
+        "aliases": ["krita"],
+        "args": ""
+    },
+    "io.github.shiftey.Desktop": {
+        "aliases": ["github", "github desktop"],
+        "args": ""
+    },
+    "dev.vencord.Vesktop": {
+        "aliases": ["discord"],
+        "args": ""
+    },
+    "page.kramo.Cartridges": {
+        "aliases": ["games library", "jeux", "cartouches"],
+        "args": ""
+    },
+    "md.obsidian.Obsidian": {
+        "aliases": ["obsidian"],
+        "args": ""
+    },
+    "io.github.amit9838.mousam": {
+        "aliases": ["météo", "weather", "mousam"],
+        "args": ""
+    },
+    "com.obsproject.Studio": {
+        "aliases": ["obs studio"],
+        "args": ""
+    } 
 }
+

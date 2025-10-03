@@ -7,9 +7,10 @@ For now, you can use your voice to command the AI and ask questions.
 ## Installation 
 
 ### Linux
-(tested on Arch with GNOME 49 and on Linux Mint 22 with Cinnamon)
+(tested on Arch with GNOME 49)
 - ``pip install -r requrements.txt``
 - install flameshot (to take screenshot for image recognition)
+- install wmctrl (to set focus on apps when asked to)
 - install Ollama and pull Qwen3
 
 ### Windows
@@ -20,9 +21,9 @@ for now only on Linux
 When launching for the first time, you will be prompted by the installation wizard. Follow it's steps to complete the installation.
 
 ### Voiced commands
-- You can ask Athena to open or close apps among those in `settings/apps.json`
+- You can ask Athena to open, close or restart apps among those in `settings/apps.json`
 - You can ask Athena what time or what day it is.
-- You can ask Athena to press something on your screen (for now, it's just able to see 'play' buttons)
+- You can ask Athena to press something on your screen (for now, it's just able to see 'play' buttons and it isn't perfect)
 - You can ask Athena to shut down itself.
 - You can ask Athena anything you would ask an AI (It can't generate images tough)
 
