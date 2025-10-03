@@ -506,13 +506,11 @@ class MainWindow(QWidget):
     def show_language_selection(self):
         self.show_page(self.language_selection)
 
-    def show_option_selection(self, username):
-        print(username)
+    def show_option_selection(self):
         self.modules_selection.load_language()
         self.show_page(self.modules_selection)
     
-    def show_username_selection(self, language):
-        print(language)
+    def show_username_selection(self):
         self.username_selection.load_language()
         self.show_page(self.username_selection)
 
@@ -525,7 +523,6 @@ class MainWindow(QWidget):
             self.lang = json.load(f)
 
     def show_vosk_installation(self, selected_modules):
-        print(selected_modules)
         self.load_language()
         if self.lang["voice module"] in selected_modules:
             if self.config.get("General", "lang", fallback="en_US") == "en_US":
@@ -543,7 +540,7 @@ class MainWindow(QWidget):
         with open(config_path, "w") as configfile:
             self.config.write(configfile)
         sys.exit(0)
-        
+
     def download_vosk_model(self, url):
 
         local_zip = url.split("/")[-1]

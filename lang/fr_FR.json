@@ -35,7 +35,7 @@
     "slider module": "Défilement",
     "back button": "Retour",
     "next button": "Suivant",
-    "ask username": "Comment Athéna devrait vous appeller ?",
+    "ask username": "Comment Athéna devrait vous appeler ?",
     "no username error": "Veuillez entrer un nom d'utilisateur!",
     "downloading vosk": "Téléchargement du modèle Vosk (Cela peut prendre un certain temps)",
     "downloaded vosk": "Modèle Vosk Téléchargé"
