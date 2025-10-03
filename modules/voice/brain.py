@@ -9,6 +9,7 @@ from datetime import datetime
 import sys
 sys.path.append(os.path.dirname(__file__))
 from .functions import *
+import locale
 
 class Brain():
     BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -23,7 +24,7 @@ class Brain():
     log_file = os.path.join(log_dir, "history.log")
     lang_dir = os.path.join(BASE_DIR, "lang")
     lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
-    
+    locale.setlocale(locale.LC_TIME, f'{config.get("General", "lang")}.UTF-8')
     def __init__(self):
         self.use_logging = False
         self.use_speaker = False
