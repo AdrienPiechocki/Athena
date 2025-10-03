@@ -14,9 +14,9 @@ import sys
 BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
 config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
 
-name = "Adrien"
 config = configparser.ConfigParser()
 config.read(config_path)
+name = config.get('General', 'username', fallback="").capitalize()
 system = platform.system()
 
 lang_dir = os.path.join(BASE_DIR, "lang")

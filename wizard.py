@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLabel, QPushButton,
     QSizePolicy, QScrollArea, QGridLayout, QStackedWidget,
-    QCheckBox, QMessageBox, QProgressBar
+    QCheckBox, QMessageBox, QProgressBar, QLineEdit
 )
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QFont, QIcon
@@ -247,6 +247,104 @@ class SelectModules(QWidget):
     def on_back_clicked(self):
         self.back_clicked.emit()
 
+class SelectUsername(QWidget):
+    
+    username_validated = Signal(str)
+    back_clicked = Signal()
+
+    def __init__(self):
+        super().__init__()
+        global config_path
+        self.config = configparser.ConfigParser()
+        self.config.read(config_path)
+        self.lang = {}
+        
+        # Main layout
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(30, 30, 30, 30)
+        self.layout.setSpacing(15)
+
+        # ScrollArea
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFocusPolicy(Qt.NoFocus)
+        self.scroll_area.setFrameShape(QScrollArea.NoFrame)
+        self.layout.addWidget(self.scroll_area)
+
+        # Inner Widget
+        self.scroll_content = QWidget()
+        self.scroll_area.setWidget(self.scroll_content)
+
+        # Inner vertical layout
+        self.scroll_layout = QVBoxLayout(self.scroll_content)
+        self.scroll_layout.setSpacing(20)
+
+        # Label
+        self.label = QLabel("")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setFocusPolicy(Qt.StrongFocus)
+        self.label.setWordWrap(True)
+        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.scroll_layout.addWidget(self.label)
+
+        # Input
+        self.username_input = QLineEdit("")
+        self.username_input.setPlaceholderText("...")  
+        self.username_input.setFocusPolicy(Qt.StrongFocus)
+        self.scroll_layout.addWidget(self.username_input)        
+
+        # Back button
+        self.back_button = QPushButton("")
+        self.back_button.setFocusPolicy(Qt.StrongFocus)
+        self.back_button.clicked.connect(self.on_back_clicked)
+        self.scroll_layout.addWidget(self.back_button)
+
+        # Next button
+        self.next_button = QPushButton("")
+        self.next_button.setFocusPolicy(Qt.StrongFocus)
+        self.next_button.clicked.connect(self.on_next_clicked)
+        self.scroll_layout.addWidget(self.next_button)
+
+    def load_language(self):
+        global BASE_DIR, config_path
+        self.config.read(config_path)
+        lang_code = self.config.get("General", "lang", fallback="en_US")
+        lang_file = os.path.join(BASE_DIR, "lang", f"{lang_code}.json")
+        with open(lang_file, "r", encoding="utf-8") as f:
+            self.lang = json.load(f)
+
+        self.label.setText(self.lang["ask username"])
+        self.label.setAccessibleDescription(self.lang["ask username"])
+        self.back_button.setText(self.lang["back button"])
+        self.back_button.setAccessibleDescription(self.lang["back button"])
+        self.next_button.setText(self.lang["next button"])
+        self.next_button.setAccessibleDescription(self.lang["next button"])
+        
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        size = self.scroll_area.height() // 15
+        font = QFont("Arial", size)
+        if not font.exactMatch():
+            font = QFont("Sans Serif", size)
+        self.label.setFont(font)
+        self.username_input.setFont(font)
+        self.next_button.setFont(font)
+        self.back_button.setFont(font)
+        
+    def on_next_clicked(self):
+        username = self.username_input.text().strip()
+        if not username:
+            QMessageBox.warning(self, "Error", self.lang["no username error"])
+            return
+
+        self.config.set("General", "username", username)
+        with open(config_path, "w") as configfile:
+            self.config.write(configfile)
+
+        self.username_validated.emit(username)
+
+    def on_back_clicked(self):
+        self.back_clicked.emit()
 
 class InstallVosk(QWidget):
     def __init__(self):
@@ -319,17 +417,22 @@ class MainWindow(QWidget):
 
         # Page 1 : Language selection
         self.language_selection = SelectLanguage()
-        self.language_selection.language_selected.connect(self.show_option_selection)
+        self.language_selection.language_selected.connect(self.show_username_selection)
 
-        # Page 2 : Modules selection
+        # Page 2 : Username selection
+        self.username_selection = SelectUsername()
+        self.username_selection.username_validated.connect(self.show_option_selection)
+        self.username_selection.back_clicked.connect(self.show_language_selection)
+
+        # Page 3 : Modules selection
         self.modules_selection = SelectModules()
-        self.modules_selection.modules_validated.connect(self.next)
-        self.modules_selection.back_clicked.connect(self.show_language_selection)
+        self.modules_selection.modules_validated.connect(self.show_vosk_installation)
+        self.modules_selection.back_clicked.connect(self.show_username_selection)
 
-        # Page 3 : Vosk installation
+        # Page 4 : Vosk installation
         self.vosk_installation = InstallVosk()
 
-        self.pages = [self.language_selection, self.modules_selection, self.vosk_installation]
+        self.pages = [self.language_selection, self.username_selection ,self.modules_selection, self.vosk_installation]
         for page in self.pages:
             self.layout.addWidget(page)
 
@@ -386,6 +489,14 @@ class MainWindow(QWidget):
             QCheckBox::indicator:hover {
                 border: 2px solid #FFA500;
             }
+            QLineEdit {
+                padding: 15px;
+                border: 4px solid #0000FF;
+            }
+            QLineEdit:focus {
+                border: 4px solid #FFA500;
+                outline: none;
+            }
         """)
 
     def show_page(self, page: QWidget):
@@ -395,11 +506,16 @@ class MainWindow(QWidget):
     def show_language_selection(self):
         self.show_page(self.language_selection)
 
-    def show_option_selection(self, language):
-        print(language)
+    def show_option_selection(self, username):
+        print(username)
         self.modules_selection.load_language()
         self.show_page(self.modules_selection)
     
+    def show_username_selection(self, language):
+        print(language)
+        self.username_selection.load_language()
+        self.show_page(self.username_selection)
+
     def load_language(self):
         global BASE_DIR, config_path
         self.config.read(config_path)
@@ -408,7 +524,7 @@ class MainWindow(QWidget):
         with open(lang_file, "r", encoding="utf-8") as f:
             self.lang = json.load(f)
 
-    def next(self, selected_modules):
+    def show_vosk_installation(self, selected_modules):
         print(selected_modules)
         self.load_language()
         if self.lang["voice module"] in selected_modules:
@@ -421,14 +537,13 @@ class MainWindow(QWidget):
             else:
                 return
             self.download_vosk_model(url)
-            
+        
         print("done")
         self.config.set("General", "wizard", "true")
         with open(config_path, "w") as configfile:
             self.config.write(configfile)
         sys.exit(0)
-
-    
+        
     def download_vosk_model(self, url):
 
         local_zip = url.split("/")[-1]
@@ -475,7 +590,6 @@ class MainWindow(QWidget):
         progress.setValue(100)
         QMessageBox.information(self, "Vosk", self.lang["downloaded vosk"])
         progress.deleteLater()
-
 
 
 if __name__ == "__main__":

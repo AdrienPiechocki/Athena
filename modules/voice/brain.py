@@ -14,11 +14,11 @@ import locale
 class Brain():
     BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
     config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
-    name = "Adrien"
     cancel = False
     speaker = Speaker()
     config = configparser.ConfigParser()
     config.read(config_path)
+    name = config.get('General', 'username', fallback="").capitalize()
     log_dir = os.path.join("logs")
     os.makedirs(log_dir, exist_ok=True)
     log_file = os.path.join(log_dir, "history.log")
