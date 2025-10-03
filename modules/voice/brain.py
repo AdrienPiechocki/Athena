@@ -88,7 +88,6 @@ class Brain():
                 if hasattr(chunk, "message") and hasattr(chunk.message, "content"):
                     full_response += chunk.message.content
 
-            self.update_history(prompt, full_response)
             return full_response
 
         except Exception as e:
@@ -142,6 +141,7 @@ class Brain():
                             ai_response = self.lang["non authorized action"]
 
             result = self.format_markdown(ai_response)
+            self.update_history(user_input, result)
             self.log(result)
         else:
             result = self.lang["no AI"]
