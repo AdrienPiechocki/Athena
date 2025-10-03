@@ -454,7 +454,7 @@ class MainWindow(QWidget):
             self.config.write(configfile)
         os.remove(local_zip)
         progress.setValue(100)
-        QMessageBox.information(self, "Done", self.lang["downloaded vosk"])
+        QMessageBox.information(self, "Vosk", self.lang["downloaded vosk"])
         progress.deleteLater()
 
 
