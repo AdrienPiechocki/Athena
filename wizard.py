@@ -42,12 +42,18 @@ class InstallerThread(QThread):
         self.lang = lang
         self.system = platform.system().lower()
         self.vosk_url = vosk_url
+        self._is_running = True
         
+    def stop(self):
+        self._is_running = False
+
     def run_command(self, cmd, silent=False):
+        if not self._is_running:
+            self.log_signal.emit("❌")
+            return
         cmd_str = ' '.join(cmd) if isinstance(cmd, list) else cmd
         self.log_signal.emit(f"➡️ {self.lang['executing']} : {cmd_str}")
         try:
-            # Remplace sudo par pkexec pour la GUI
             if "sudo" in cmd:
                 cmd[0] = "pkexec"
             if silent:
@@ -60,9 +66,14 @@ class InstallerThread(QThread):
     def progress_step(self, description, duration=2):
         steps = duration * 20
         for i in range(steps):
+            if not self._is_running:
+                self.log_signal.emit("❌")
+                return False
             self.progress_signal.emit(int((i+1)/steps*100))
             time.sleep(0.05)
         self.progress_signal.emit(0)
+        return True
+
 
     def install_vosk_model(self):
         if not self.vosk_url:
@@ -90,6 +101,9 @@ class InstallerThread(QThread):
             downloaded = 0
             with open(local_zip, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
+                    if not self._is_running:
+                        self.log_signal.emit("❌")
+                        return
                     f.write(chunk)
                     downloaded += len(chunk)
                     if total_size:
@@ -261,7 +275,6 @@ class InstallerUI(QWidget):
         self.thread.progress_signal.connect(self.progress.setValue)
         self.thread.start()
         self.start_button.setEnabled(False)
-        self.back_button.setEnabled(False)
 
     def append_log(self, text):
         self.log.append(text)
@@ -283,6 +296,9 @@ class InstallerUI(QWidget):
         self.back_button.setAccessibleDescription(self.lang["back button"])
 
     def on_back_clicked(self):
+        if hasattr(self, "thread") and self.thread.isRunning():
+            self.thread.stop()
+            self.thread.terminate()
         self.back_clicked.emit()
 
     def on_installation_finished(self, success):
@@ -321,7 +337,10 @@ class InstallerUI(QWidget):
             self.config.write(configfile)
         sys.exit(0)
 
-
+    def closeEvent(self, event):
+        if hasattr(self, "thread") and self.thread.isRunning():
+            self.thread.stop()
+            self.thread.terminate()
 
 class SelectLanguage(QWidget):
     language_selected = Signal(str)
@@ -775,6 +794,9 @@ class MainWindow(QWidget):
 
     def show_installer(self):
         self.installer.load_language()
+        self.installer.start_button.setEnabled(True)
+        self.installer.log.clear()
+        self.installer.progress.setValue(0)
         self.show_page(self.installer)
 
 if __name__ == "__main__":
