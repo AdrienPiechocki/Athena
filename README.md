@@ -4,6 +4,12 @@ For now, you can use your voice to command the AI and ask questions.
 
 **It only speaks and understands either French or English**
 
+## What it aims to be
+Athena aims to be an open source alternative to expensive assertive apps like Grid 3 (for Windows / Ipad). 
+It aims to bring computer control for disabled people whatever is their disability.
+In the end, Athena will be accessible by all means (even with a single button). 
+This means you will be able to access your whole computer via Athena (mouse, keyboard, apps, etc.)
+
 ## Warning
 Some older laptops may not be able to launch the AI model due to RAM requirements...
 
@@ -47,9 +53,3 @@ If you need to uninstall any of the dependencies, here they are :
 ### Windows
 - `espeak-ng`
 - `ollama`
-
-## What it aims to be
-Athena aims to be an open source alternative to expensive assertive apps like Grid 3 (for Windows / Ipad). 
-It aims to bring computer control for disabled people whatever is their disability.
-In the end, Athena will be accessible by all means (even with a single button). 
-This means you will be able to access your whole computer via Athena (mouse, keyboard, apps, etc.)
