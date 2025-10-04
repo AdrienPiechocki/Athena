@@ -66,7 +66,7 @@ class InstallerThread(QThread):
 
     def install_vosk_model(self):
         if not self.vosk_url:
-            self.log_signal.emit("⚠️ Aucun URL Vosk fourni, étape ignorée")
+            self.log_signal.emit(f"⚠️ {self.lang['ignore vosk']}")
             return
 
         local_zip = self.vosk_url.split("/")[-1]
@@ -78,11 +78,11 @@ class InstallerThread(QThread):
             self.config.set("Voice", "vosk", model_path)
             with open(config_path, "w") as configfile:
                 self.config.write(configfile)
-            self.log_signal.emit(f"✅ Modèle Vosk déjà présent : {model_path}")
+            self.log_signal.emit(f"✅ {self.lang['vosk already here']} : {model_path}")
             return
 
         os.makedirs(extract_folder, exist_ok=True)
-        self.log_signal.emit(f"⬇️ Téléchargement du modèle Vosk depuis {self.vosk_url}")
+        self.log_signal.emit(f"⬇️ {self.lang['downloading vosk']} {self.vosk_url}")
 
         with requests.get(self.vosk_url, stream=True) as r:
             r.raise_for_status()
@@ -97,7 +97,7 @@ class InstallerThread(QThread):
                         self.progress_signal.emit(percent)
                         QApplication.processEvents()
 
-        self.log_signal.emit(f"📦 Extraction du modèle Vosk...")
+        self.log_signal.emit(f"📦 {self.lang['vosk extraction']}...")
         with zipfile.ZipFile(local_zip, "r") as zip_ref:
             zip_ref.extractall(extract_folder)
 
@@ -106,7 +106,7 @@ class InstallerThread(QThread):
             self.config.write(configfile)
 
         os.remove(local_zip)
-        self.log_signal.emit(f"✅ Modèle Vosk installé : {model_path}")
+        self.log_signal.emit(f"✅ {self.lang['vosk installed']} : {model_path}")
         self.progress_signal.emit(100)
 
 

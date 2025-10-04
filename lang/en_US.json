@@ -43,8 +43,11 @@
     "next button": "Next",
     "ask username": "How should Athena call you?",
     "no username error": "Please enter a username!",
-    "downloading vosk": "Downloading Vosk model (this may take a while)",
-    "downloaded vosk": "Vosk model downloaded! Please restart Athena.",
+    "downloading vosk": "Downloading Vosk model from",
+    "vosk already here": "Vosk model already installed",
+    "ignore vosk": "No Vosk URL given, step skipped",
+    "vosk extraction": "Extracting Vosk model",
+    "vosk installed": "Vosk model installed",
 
     "auto-install title": "AUTOMATED INSTALLATION",
     "executing": "Executing",
