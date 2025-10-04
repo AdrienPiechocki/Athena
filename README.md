@@ -18,16 +18,12 @@ Launch with :
 ```
 python main.py
 ```
-
 When launching for the first time, you will be prompted by the installation wizard. Follow it's steps to complete the installation.
 
-if you need to restart the installation process, set `wizard = false` in `settings/config.cfg`
-
-or simply run 
+if you need to restart the installation process, set `wizard = false` in `settings/config.cfg` or simply run 
 ```
 python wizard.py
 ```
-
 Then, restart the app.
 
 ### Voiced commands
