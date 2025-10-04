@@ -2,7 +2,7 @@
 This app is a **WIP** accessible computer assistant written in Python. It works with a **local** version of Qwen3, thanks to Ollama.
 For now, you can use your voice to command the AI and ask questions.
 
-**For now, it only speaks and understands French or English**
+**It only speaks and understands either French or English**
 
 ## Warning
 Some older laptops may not be able to launch the AI model due to RAM requirements...
