@@ -8,6 +8,7 @@ import sounddevice as sd
 from vosk import Model, KaldiRecognizer, SetLogLevel
 from PySide6.QtCore import QThread, Signal, Qt, QTimer
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTextEdit, QPushButton, QMessageBox
+from PySide6.QtGui import QFont
 from .brain import Brain
 import __main__
 
@@ -112,20 +113,30 @@ class ListenerUI(QWidget):
         self.load_language()
 
         layout = QVBoxLayout()
+        self.resize(600, 800)
+
 
         self.label = QLabel(f"<h2>{self.lang['listener title']}</h2>")
+        self.label.setAccessibleDescription(self.lang["listener title"])
+        self.label.setFocusPolicy(Qt.StrongFocus)
         layout.addWidget(self.label)
 
         self.log = QTextEdit()
         self.log.setReadOnly(True)
+        self.log.setAccessibleName(self.lang["text logs"])
+        self.log.setFocusPolicy(Qt.StrongFocus)
         layout.addWidget(self.log)
 
         self.start_button = QPushButton(self.lang["start listening"])
+        self.start_button.setAccessibleDescription(self.lang["start listening"])
         self.start_button.clicked.connect(self.start_listening)
+        self.start_button.setFocusPolicy(Qt.StrongFocus)
         layout.addWidget(self.start_button)
 
         self.stop_button = QPushButton(self.lang["stop listening"])
+        self.stop_button.setAccessibleDescription(self.lang["stop listening"])
         self.stop_button.clicked.connect(self.stop_listening)
+        self.stop_button.setFocusPolicy(Qt.StrongFocus)
         layout.addWidget(self.stop_button)
 
         self.setLayout(layout)
@@ -142,12 +153,19 @@ class ListenerUI(QWidget):
             QLabel {
                 padding: 15px;
             }
+            QLabel:focus {
+                border: 4px solid #FFA500;
+                outline: none;
+            }
             QPushButton {
                 background-color: #0000FF;
                 color: #FFFFFF;
                 border: 3px solid #FFFFFF;
                 border-radius: 8px;
                 padding: 15px;
+            }
+            QPushButton:focus {
+                border: 4px solid #FFA500;
             }
             QPushButton:hover {
                 background-color: #1E90FF;
@@ -156,6 +174,9 @@ class ListenerUI(QWidget):
                 background-color: #111111;
                 color: #00FF00;
                 border: 2px solid #FFFFFF;
+            }
+            QTextEdit:focus {
+                border: 4px solid #FFA500;
             }
         """)
 
@@ -189,4 +210,14 @@ class ListenerUI(QWidget):
 
     def on_listening_finished(self, success):
         self.start_button.setEnabled(True)
-        
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        size = self.height() // 15
+        font = QFont("Arial", size)
+        if not font.exactMatch():
+            font = QFont("Sans Serif", size)
+        self.label.setFont(font)
+        self.log.setFont(font)
+        self.start_button.setFont(font)
+        self.stop_button.setFont(font)
