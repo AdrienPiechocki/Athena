@@ -8,17 +8,25 @@ For now, you can use your voice to command the AI and ask questions.
 Some older laptops may not be able to launch the AI model due to RAM requirements...
 
 ## Installation 
-
-``git clone https://github.com/AdrienPiechocki/Athena.git``
-
-``cd Athena/``
-
+```
+git clone https://github.com/AdrienPiechocki/Athena.git``
+cd Athena/
+```
 ## Usage
-``python main.py`` to run the app.
+
+Launch with :
+```
+python main.py
+```
 
 When launching for the first time, you will be prompted by the installation wizard. Follow it's steps to complete the installation.
 
-if you need to restart the installation process, set ``wizard = false`` in ``settings/config.cfg`` or simply run ``python wizard.py``
+if you need to restart the installation process, set `wizard = false` in `settings/config.cfg`
+
+or simply run 
+```
+python wizard.py
+```
 
 Then, restart the app.
 
