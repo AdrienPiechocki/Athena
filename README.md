@@ -1,5 +1,5 @@
 # Athena
-This app is a **WIP** accessible computer assistant written in Python. It works with a **local** version of Qwen3, thanks to Ollama.
+This app is a **WIP** accessible computer assistant written in Python for Linux and Windows. It works with a **local** version of Qwen3, thanks to Ollama.
 For now, you can use your voice to command the AI and ask questions.
 
 **It only speaks and understands either French or English**
@@ -13,7 +13,6 @@ git clone https://github.com/AdrienPiechocki/Athena.git
 cd Athena/
 ```
 ## Usage
-
 Launch with :
 ```
 python main.py
@@ -33,6 +32,21 @@ Then, restart the app.
 - You can ask Athena to press something on your screen (for now, it's just able to see 'play' buttons and it isn't perfect)
 - You can ask Athena to shut down itself.
 - You can ask Athena anything you would ask an AI (It can't generate images tough)
+
+## Uninstallation
+To uninstall, simply delete the install folder.
+
+If you need to uninstall any of the dependencies, here they are :
+### Linux
+- `flameshot`
+- `wmctrl`
+- `espeak-ng`
+- `curl`
+- `ollama`
+
+### Windows
+- `espeak-ng`
+- `ollama`
 
 ## What it aims to be
 Athena aims to be an open source alternative to expensive assertive apps like Grid 3 (for Windows / Ipad). 
