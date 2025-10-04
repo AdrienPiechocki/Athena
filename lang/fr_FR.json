@@ -61,7 +61,9 @@
     "system detected": "Système détecté",
     "wrong system": "Système non pris en charge",
     "finish install": "Finalisation de l’installation",
-    "install success": "Installation terminée avec succès !",
+    "install success": "Installation réussie",
+    "install failed": "Installation échouée",
     "install interupted": "Installation interrompue par l’utilisateur.",
-    "start install": "Démarrer l'installation"
+    "start install": "Démarrer l'installation",
+    "please restart": "Veuillez redémarrer Athéna"
 }
