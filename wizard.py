@@ -18,7 +18,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
 config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
 
 class SelectLanguage(QWidget):
-    global config_path
+    global config_path, BASE_DIR
     language_selected = Signal(str)
 
     config = configparser.ConfigParser()
@@ -66,11 +66,11 @@ class SelectLanguage(QWidget):
 
         self.languages = {
             "Français": {
-                "icon": os.path.join("data", "flags", "fr.svg"),
+                "icon": os.path.join(BASE_DIR, "data", "flags", "fr.svg"),
                 "lang": "fr_FR"
             },
             "English": {
-                "icon": os.path.join("data", "flags", "us.svg"),
+                "icon": os.path.join(BASE_DIR, "data", "flags", "us.svg"),
                 "lang": "en_US"
             }
         }
