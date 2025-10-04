@@ -28,7 +28,8 @@ Some older laptops may not be able to launch the AI model due to RAM requirement
 When launching for the first time, you will be prompted by the installation wizard. Follow it's steps to complete the installation.
 
 ### Voiced commands
-- You can ask Athena to open, close or restart apps among those in `settings/apps.json`
+- You can ask Athena to open, close or restart apps among those in `settings/apps.json` (customizable)
+- You can ask Athena to focus existing windows (does not work very well)
 - You can ask Athena what time or what day it is.
 - You can ask Athena to press something on your screen (for now, it's just able to see 'play' buttons and it isn't perfect)
 - You can ask Athena to shut down itself.
