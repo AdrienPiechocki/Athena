@@ -20,6 +20,8 @@ When launching for the first time, you will be prompted by the installation wiza
 
 if you need to restart the installation process, set ``wizard = false`` in ``settings/config.cfg`` or simply run ``python wizard.py``
 
+Then, restart the app.
+
 ### Voiced commands
 - You can ask Athena to open, close or restart apps among those in `settings/apps.json` (customizable)
 - You can ask Athena to focus existing windows (does not work very well)
