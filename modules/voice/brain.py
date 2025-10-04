@@ -11,19 +11,28 @@ sys.path.append(os.path.dirname(__file__))
 from .functions import *
 import locale
 
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
+
+config_path = resource_path("settings/config.cfg")
+lang_dir = resource_path("lang")
+data_dir = resource_path("data")
+log_dir = ressource_path("logs")
+
 class Brain():
-    BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
-    config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
     cancel = False
     speaker = Speaker()
     config = configparser.ConfigParser()
     config.read(config_path)
     name = config.get('General', 'username', fallback="").capitalize()
-    log_dir = os.path.join("logs")
     os.makedirs(log_dir, exist_ok=True)
     log_file = os.path.join(log_dir, "history.log")
     debug_file = os.path.join(log_dir, "debug.log")
-    lang_dir = os.path.join(BASE_DIR, "lang")
     lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
     locale.setlocale(locale.LC_TIME, f'{config.get("General", "lang")}.UTF-8')
     def __init__(self):

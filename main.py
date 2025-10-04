@@ -3,9 +3,14 @@ import configparser
 import os
 import sys 
 
-BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
-config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
 
+config_path = resource_path("settings/config.cfg")
 config = configparser.ConfigParser()
 config.read(config_path)
 

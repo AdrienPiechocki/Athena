@@ -8,15 +8,25 @@ from vosk import Model, KaldiRecognizer, SetLogLevel
 import configparser
 import os
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
+
+config_path = resource_path("settings/config.cfg")
+lang_dir = resource_path("lang")
+data_dir = resource_path("data")
+log_dir = ressource_path("logs")
+
 class Listener():
-    BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
-    config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
+    
     SetLogLevel(-1)
 
     config = configparser.ConfigParser()
     config.read(config_path)
 
-    lang_dir = os.path.join(BASE_DIR, "lang")
     lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
     with open(lang_file, 'r', encoding='utf-8') as f:
         lang = json.load(f)

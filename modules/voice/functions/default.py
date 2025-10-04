@@ -11,21 +11,29 @@ import os
 import platform
 import sys
 
-BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
-config_path = os.path.join(BASE_DIR, "settings", "config.cfg")
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
+
+config_path = resource_path("settings/config.cfg")
+lang_dir = resource_path("lang")
+data_dir = resource_path("data")
+log_dir = ressource_path("logs")
+apps_path = resource_path("settings/apps.json")
 
 config = configparser.ConfigParser()
 config.read(config_path)
 name = config.get('General', 'username', fallback="").capitalize()
 system = platform.system()
 
-lang_dir = os.path.join(BASE_DIR, "lang")
 lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
 with open(lang_file, 'r', encoding='utf-8') as f:
     lang = json.load(f)
 
-apps_file = os.path.join(BASE_DIR, "settings", "apps.json")
-with open(apps_file, 'r', encoding='utf-8') as f:
+with open(apps_path, 'r', encoding='utf-8') as f:
     ALLOWED_APPS = json.load(f)
 
 def run_application(app_name):

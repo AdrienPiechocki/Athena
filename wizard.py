@@ -16,7 +16,6 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import QThread, Signal, QSize, Qt, QTimer
 from PySide6.QtGui import QFont, QIcon
 
-# --- Config et langue ---
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -26,6 +25,7 @@ def resource_path(relative_path):
 
 config_path = resource_path("settings/config.cfg")
 lang_dir = resource_path("lang")
+data_dir = resource_path("data")
 
 BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
 
@@ -212,7 +212,6 @@ class InstallerUI(QWidget):
 
     def __init__(self):
         super().__init__()
-        global config_path
         self.config = configparser.ConfigParser()
         self.config.read(config_path)
         self.lang = {}
@@ -268,7 +267,6 @@ class InstallerUI(QWidget):
         self.log.verticalScrollBar().setValue(self.log.verticalScrollBar().maximum())
 
     def load_language(self):
-        global config_path, lang_dir
         self.config.read(config_path)
         lang_code = self.config.get("General", "lang", fallback="en_US")
         lang_file = os.path.join(lang_dir, f"{lang_code}.json")
@@ -325,7 +323,6 @@ class InstallerUI(QWidget):
 
 
 class SelectLanguage(QWidget):
-    global config_path, BASE_DIR
     language_selected = Signal(str)
 
     config = configparser.ConfigParser()
@@ -373,11 +370,11 @@ class SelectLanguage(QWidget):
 
         self.languages = {
             "Français": {
-                "icon": os.path.join(BASE_DIR, "data", "flags", "fr.svg"),
+                "icon": os.path.join(data_dir, "flags", "fr.svg"),
                 "lang": "fr_FR"
             },
             "English": {
-                "icon": os.path.join(BASE_DIR, "data", "flags", "us.svg"),
+                "icon": os.path.join(data_dir, "flags", "us.svg"),
                 "lang": "en_US"
             }
         }
@@ -431,8 +428,6 @@ class SelectModules(QWidget):
 
     def __init__(self):
         super().__init__()
-
-        global config_path
         self.config = configparser.ConfigParser()
         self.config.read(config_path)
         self.lang = {}
@@ -481,10 +476,9 @@ class SelectModules(QWidget):
         self.scroll_layout.addWidget(self.next_button)
 
     def load_language(self):
-        global BASE_DIR, config_path
         self.config.read(config_path)
         lang_code = self.config.get("General", "lang", fallback="en_US")
-        lang_file = os.path.join(BASE_DIR, "lang", f"{lang_code}.json")
+        lang_file = os.path.join(lang_dir, f"{lang_code}.json")
         with open(lang_file, "r", encoding="utf-8") as f:
             self.lang = json.load(f)
 
@@ -561,7 +555,6 @@ class SelectUsername(QWidget):
 
     def __init__(self):
         super().__init__()
-        global config_path
         self.config = configparser.ConfigParser()
         self.config.read(config_path)
         self.lang = {}
@@ -613,10 +606,9 @@ class SelectUsername(QWidget):
         self.scroll_layout.addWidget(self.next_button)
 
     def load_language(self):
-        global BASE_DIR, config_path
         self.config.read(config_path)
         lang_code = self.config.get("General", "lang", fallback="en_US")
-        lang_file = os.path.join(BASE_DIR, "lang", f"{lang_code}.json")
+        lang_file = os.path.join(lang_dir, f"{lang_code}.json")
         with open(lang_file, "r", encoding="utf-8") as f:
             self.lang = json.load(f)
 
@@ -656,7 +648,6 @@ class SelectUsername(QWidget):
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        global config_path
         self.setWindowTitle("Athena")
         self.resize(800, 600)
 
