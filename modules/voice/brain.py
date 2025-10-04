@@ -22,8 +22,8 @@ def resource_path(relative_path: str) -> str:
 
 config_path = resource_path("settings/config.cfg")
 lang_dir = resource_path("lang")
-data_dir = resource_path("data")
 log_dir = resource_path("logs")
+actions_path = resource_path("settings/actions.json")
 
 class Brain():
     cancel = False
@@ -35,40 +35,40 @@ class Brain():
     log_file = os.path.join(log_dir, "history.log")
     debug_file = os.path.join(log_dir, "debug.log")
     lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
+    with open(actions_path, 'r', encoding='utf-8') as f:
+        actions_file = json.load(f)
+        
     def __init__(self, log_signal=None):
         locale.setlocale(locale.LC_TIME, f'{self.config.get("General", "lang")}.UTF-8')
         self.log_signal = log_signal
         self.use_logging = False
         self.use_speaker = False
         self.hotword = ""
-        self.use_ollama = self.config.getboolean("Modules", "voice", fallback=False)
-        if self.use_ollama:
-            with open(self.lang_file, 'r', encoding='utf-8') as f:
-                self.lang = json.load(f)
-            self.hotword = self.lang["hotword"]
-            self.use_logging = self.config.getboolean("Voice", "logging", fallback=False)
-            self.use_speaker = self.config.getboolean("Voice", "speaker", fallback=False)
-            actions_str = self.config.get("Voice", "actions", fallback="")
-            self.ALLOWED_ACTIONS = [a.strip() for a in actions_str.split(",")]
-            self.SYSTEM_PROMPT = textwrap.dedent(f"""
-                You are an voice commanded AI assistant called {self.lang['hotword'].capitalize()}. 
-                Your user is called {self.name} and speaks {self.lang['language']}.
-                """)
-                
-            for action in self.ALLOWED_ACTIONS:
-                    text = self.config.get("Voice", f"action_{action}", fallback="")
-                    self.SYSTEM_PROMPT += text.replace("\\n", "\n")
+        with open(self.lang_file, 'r', encoding='utf-8') as f:
+            self.lang = json.load(f)
+        self.hotword = self.lang["hotword"]
+        self.use_logging = self.config.getboolean("Voice", "logging", fallback=False)
+        self.use_speaker = self.config.getboolean("Voice", "speaker", fallback=False)
+        actions_str = self.config.get("Voice", "actions", fallback="")
+        self.ALLOWED_ACTIONS = [a.strip() for a in actions_str.split(",")]
+        self.SYSTEM_PROMPT = textwrap.dedent(f"""
+            You are an voice commanded AI assistant called {self.lang['hotword'].capitalize()}. 
+            Your user is called {self.name} and speaks {self.lang['language']}.
+            """)
+            
+        for action in self.ALLOWED_ACTIONS:
+            self.SYSTEM_PROMPT += self.actions_file[action]["prompt"]
 
-            self.SYSTEM_PROMPT += textwrap.dedent("""
-                If the user asks multiple actions at once, ONLY answer with :
-                ACTION: <action_1> ACTION: <action_2> ACTION: ...
-                Else, answer normaly and simply (one sentence or two).
-                Don't use emojis.
-                /no_think
-                """)
-            self.conversation_history = [{"role": "system", "content": (self.SYSTEM_PROMPT)}]
-            with open(self.log_file, 'a') as h:
-                h.write(f"{datetime.now()} [NEW SESSIONS STARTED] \n")
+        self.SYSTEM_PROMPT += textwrap.dedent("""
+            If the user asks multiple actions at once, ONLY answer with :
+            ACTION: <action_1> ACTION: <action_2> ACTION: ...
+            Else, answer normaly and simply (one sentence or two).
+            Don't use emojis.
+            /no_think
+            """)
+        self.conversation_history = [{"role": "system", "content": (self.SYSTEM_PROMPT)}]
+        with open(self.log_file, 'a') as h:
+            h.write(f"{datetime.now()} [NEW SESSIONS STARTED] \n")
 
 
     # ---------------------- FUNCTIONS ----------------------
@@ -135,40 +135,35 @@ class Brain():
 
     # ---------------------- MAIN LOOP ----------------------
     def agent_loop(self, user_input:str):
-        if self.use_ollama:
-            ai_response_raw = self.query_ollama(user_input)
-            if not ai_response_raw:
-                return
-            ai_response = self.clean_think(ai_response_raw)
-            if "ACTION:" in ai_response:
-                ai_action = "ACTION:" + ai_response.split("ACTION:", 1)[-1]
-                actions = re.findall(r"ACTION:\s*(.*?)(?=\s*ACTION:|$)", ai_action)
-                actions = [a.strip() for a in actions]
-                for full_action in actions:
-                    params = " ".join(full_action.strip().split()[1:])
-                    action = full_action.replace(params, "").strip()
-                    if action in self.ALLOWED_ACTIONS:
-                        import functions
-                        func_name = self.config.get("Voice", f"function_{action}", fallback="")
-                        call = functions.functions_registry.get(func_name)
-                        if call:
-                            if action == "terminate":
-                                func_result = call(cancel_callback=lambda: setattr(self, "cancel", True))
-                            elif params:
-                                func_result = call(params)
-                            else:
-                                func_result = call()
-                            ai_response = ai_response.replace(f'ACTION: {full_action}', func_result)
+        ai_response_raw = self.query_ollama(user_input)
+        if not ai_response_raw:
+            return
+        ai_response = self.clean_think(ai_response_raw)
+        if "ACTION:" in ai_response:
+            ai_action = "ACTION:" + ai_response.split("ACTION:", 1)[-1]
+            actions = re.findall(r"ACTION:\s*(.*?)(?=\s*ACTION:|$)", ai_action)
+            actions = [a.strip() for a in actions]
+            for full_action in actions:
+                params = " ".join(full_action.strip().split()[1:])
+                action = full_action.replace(params, "").strip()
+                if action in self.ALLOWED_ACTIONS:
+                    import functions
+                    func_name = self.actions_file[action]["function"]
+                    call = functions.functions_registry.get(func_name)
+                    if call:
+                        if action == "terminate":
+                            func_result = call(cancel_callback=lambda: setattr(self, "cancel", True))
+                        elif params:
+                            func_result = call(params)
                         else:
-                            ai_response = self.lang["non authorized action"]
+                            func_result = call()
+                        ai_response = ai_response.replace(f'ACTION: {full_action}', func_result)
+                    else:
+                        ai_response = self.lang["non authorized action"]
 
-            result = self.format_markdown(ai_response)
-            self.update_history(user_input, result)
-            self.log(result)
-        else:
-            result = self.lang["no AI"]
-            self.cancel = True
-            self.log(result)
+        result = self.format_markdown(ai_response)
+        self.update_history(user_input, result)
+        self.log(result)
 
     def log(self, result):
         if self.use_logging:

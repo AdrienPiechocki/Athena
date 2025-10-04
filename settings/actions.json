@@ -1,0 +1,38 @@
+{
+    "open": {
+        "prompt": "If the user asks you to open an app, ONLY answer with : \nACTION: open <app_name>",
+        "function": "run_application"
+    }, 
+    "close": {
+        "prompt": "If the user asks you to close an app, ONLY answer with : \nACTION: close <app_name>",
+        "function": "close_application"
+    }, 
+    "time": {
+        "prompt": "If the user asks for what time it is, ONLY answer with : \nACTION: time",
+        "function": "get_time"
+    }, 
+    "day": {
+        "prompt": "If the user asks you the date, ONLY answer with : \nACTION: day",
+        "function": "get_day"
+    },
+    "terminate": {
+        "prompt": "If the user asks you to stop yourself, ONLY answer with : \nACTION: terminate",
+        "function": "terminate"
+    },
+    "press": {
+        "prompt": "If the user asks you to click somewhere, ONLY answer with : \nACTION: press <somewhere>",
+        "function": "press"
+    },
+    "restart": {
+        "prompt": "If the user asks you to restart an app, ONLY answer with : \nACTION: close <app_name> ACTION: open <app_name>",
+        "function": ""
+    },
+    "focus": {
+        "prompt": "If the user asks you to focus on an app, ONLY answer with : \nACTION: focus <app_name>",
+        "function": "set_focus"
+    },
+    "browse": {
+        "prompt": "If the user asks you to browse for something, ONLY answer with : \nACTION: browse <subject>",
+        "function": "browse"
+    }
+}
