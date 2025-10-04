@@ -42,7 +42,7 @@ class ListenerThread(QThread):
             model_path = config.get("Voice", "vosk", fallback=False)
 
             if not model_path or not os.path.exists(model_path):
-                self.log_signal.emit(f"❌ {self.lang['no AI']}")
+                self.log_signal.emit(f"❌ {self.lang['no vosk']}")
                 self.finished_signal.emit(False)
                 return
 
@@ -54,17 +54,18 @@ class ListenerThread(QThread):
             self.model = Model(model_path)
             self.recognizer = KaldiRecognizer(self.model, 48000)
 
-            self.log_signal.emit(self.lang["say Athena"])
-            self.stream = sd.RawInputStream(
-                samplerate=48000,
-                blocksize=8000,
-                dtype="int16",
-                channels=1,
-                callback=self.audio_callback
-            )
-            self.stream.start()
+            if not self.brain.cancel:
+                self.log_signal.emit(self.lang["say Athena"])
+                self.stream = sd.RawInputStream(
+                    samplerate=48000,
+                    blocksize=8000,
+                    dtype="int16",
+                    channels=1,
+                    callback=self.audio_callback
+                )
+                self.stream.start()
 
-            self.recognize_loop()
+                self.recognize_loop()
 
         except Exception as e:
             self.log_signal.emit(f"❌ {str(e)}")
@@ -191,6 +192,7 @@ class ListenerUI(QWidget):
 
     def start_listening(self):
         self.start_button.setEnabled(False)
+        self.log.clear()
         self.append_log(self.lang["starting"])
 
         self.listener_thread = ListenerThread(self.lang)
@@ -200,9 +202,10 @@ class ListenerUI(QWidget):
 
     def stop_listening(self):
         if self.listener_thread and self.listener_thread.isRunning():
-            self.listener_thread.cancel = True
+            self.listener_thread.brain.cancel = True
             self.append_log(self.lang["stop Athena"])
             self.listener_thread.wait()
+            self.start_button.setEnabled(True)
 
     def closeEvent(self, event):
         self.stop_listening()
