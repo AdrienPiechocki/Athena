@@ -200,7 +200,7 @@ def press(place):
     global lang
 
     # -----------------------------
-    # Capture écran
+    # Screenshot
     # -----------------------------
     screenshot_path = os.path.join(os.getcwd(), "screen.png")
     if os.path.exists(screenshot_path):
@@ -227,7 +227,7 @@ def press(place):
     time.sleep(0.2)
 
     # -----------------------------
-    # Charger images avec OpenCV
+    # Load images with OpenCV
     # -----------------------------
     screen = cv2.imread(screenshot_path)
     if screen is None:
