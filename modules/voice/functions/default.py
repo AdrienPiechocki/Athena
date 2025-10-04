@@ -117,7 +117,7 @@ def close_application(app_name):
     else:
         executable = "exec_windows"
 
-    # Recherche exacte ou partielle
+    # Exact or partial search
     cmd = None
     for data in ALLOWED_APPS.values():
         if app_name in data["aliases"]:
