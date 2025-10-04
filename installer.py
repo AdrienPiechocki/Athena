@@ -17,7 +17,6 @@ lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en
 with open(lang_file, 'r', encoding='utf-8') as f:
     lang = json.load(f)
 
-# --- Couleurs console ---
 class Colors:
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
@@ -28,7 +27,6 @@ class Colors:
     BOLD = "\033[1m"
     RESET = "\033[0m"
 
-# --- Fonctions utilitaires ---
 def print_banner():
     os.system("cls" if os.name == "nt" else "clear")
     print(f"""{Colors.OKCYAN}
@@ -53,7 +51,6 @@ def progress_step(description, duration=2):
     for _ in tqdm(range(duration * 20), desc=description, ncols=80, colour="cyan"):
         time.sleep(0.05)
 
-# --- Python virtualenv ---
 def install_requirements_venv(silent=False):
     venv_dir = os.path.join(BASE_DIR, ".venv")
     venv_python = os.path.join(venv_dir, "bin", "python") if os.name != "nt" else os.path.join(venv_dir, "Scripts", "python.exe")
@@ -65,10 +62,8 @@ def install_requirements_venv(silent=False):
     else:
         print(f"{Colors.OKCYAN}🔄 {lang['venv update']}{Colors.RESET}")
 
-    # Mettre à jour pip
     run_command(venv_pip + ["install", "--upgrade", "pip"], silent=silent)
 
-    # Installer / mettre à jour les dépendances
     requirements = os.path.join(BASE_DIR, "requirements.txt")
     if os.path.exists(requirements):
         progress_step(lang["python install"], 2)
@@ -76,7 +71,6 @@ def install_requirements_venv(silent=False):
     else:
         print(f"{Colors.WARNING}⚠️  {lang['no requirements found']}{Colors.RESET}")
 
-# --- Ollama ---
 def install_ollama_model(silent=False):
     if shutil.which("ollama"):
         progress_step(lang["qwen3 install"], 3)
@@ -84,7 +78,6 @@ def install_ollama_model(silent=False):
     else:
         print(f"{Colors.WARNING}⚠️  {lang['ollama not found']}{Colors.RESET}")
 
-# --- Dépendances système ---
 def install_linux(silent=False):
     print(f"{Colors.HEADER}🐧 {lang['linux install']}{Colors.RESET}")
     if shutil.which("apt"):
@@ -132,7 +125,6 @@ def install_windows(silent=False):
 
     install_ollama_model(silent=silent)
 
-# --- Main ---
 def main():
     silent = "--silent" in sys.argv
     print_banner()
