@@ -18,6 +18,8 @@ Some older laptops may not be able to launch the AI model due to RAM requirement
 
 When launching for the first time, you will be prompted by the installation wizard. Follow it's steps to complete the installation.
 
+if you need to restart the installation process, set ``wizard = false`` in ``settings/config.cfg`` or simply run ``python wizard.py``
+
 ### Voiced commands
 - You can ask Athena to open, close or restart apps among those in `settings/apps.json` (customizable)
 - You can ask Athena to focus existing windows (does not work very well)
