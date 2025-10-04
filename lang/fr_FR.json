@@ -40,5 +40,27 @@
     "ask username": "Comment Athéna devrait vous appeler ?",
     "no username error": "Veuillez entrer un nom d'utilisateur!",
     "downloading vosk": "Téléchargement du modèle Vosk (Cela peut prendre un certain temps)",
-    "downloaded vosk": "Modèle Vosk Téléchargé! Veuillez redémarrer Athéna."
+    "downloaded vosk": "Modèle Vosk Téléchargé! Veuillez redémarrer Athéna.",
+
+    "auto-install title": "INSTALLATEUR AUTOMATIQUE",
+    "executing": "Exécution",
+    "exec error": "Erreur pendant",
+    "venv creation": "Création de l'environnement virtuel...",
+    "venv update": "Environnement virtuel existant détecté, mise à jour des packages...",
+    "python install": "Installation des modules Python",
+    "no requriements found": "Aucun fichier requirements.txt trouvé.",
+    "qwen3 install": "Installation du modèle Qwen3",
+    "ollama not found": "Ollama non détecté, impossible d’installer le modèle Qwen3.",
+    "linux install": "Installation des dépendances Linux...",
+    "no package manager": "Aucun gestionnaire de paquets compatible détecté.",
+    "package update": "Mise à jour des dépôts",
+    "packages installation": "Installation des paquets système",
+    "ollama install": "Installation d’Ollama",
+    "windows install": "Installation des dépendances Windows...",
+    "espeak install": "Installation de eSpeak-NG",
+    "system detected": "Système détecté",
+    "wrong system": "Système non pris en charge",
+    "finish install": "Finalisation de l’installation",
+    "install success": "Installation terminée avec succès !",
+    "install interupted": "Installation interrompue par l’utilisateur."
 }
