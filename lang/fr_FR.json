@@ -62,5 +62,6 @@
     "wrong system": "Système non pris en charge",
     "finish install": "Finalisation de l’installation",
     "install success": "Installation terminée avec succès !",
-    "install interupted": "Installation interrompue par l’utilisateur."
+    "install interupted": "Installation interrompue par l’utilisateur.",
+    "start install": "Démarrer l'installation"
 }

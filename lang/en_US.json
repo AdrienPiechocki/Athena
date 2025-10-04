@@ -62,5 +62,6 @@
     "wrong system": "Système unavailiable",
     "finish install": "Finishing installation",
     "install success": "Installation ended with success !",
-    "install interupted": "Installation interupted by user."
+    "install interupted": "Installation interupted by user.",
+    "start install": "Start Installation"
 }
