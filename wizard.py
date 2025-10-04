@@ -265,8 +265,10 @@ class InstallerUI(QWidget):
         self.setTabOrder(self.log, self.progress)
         self.setTabOrder(self.progress, self.start_button)
         self.setTabOrder(self.start_button, self.back_button)
-
+        
         QTimer.singleShot(0, self.start_button.setFocus)
+
+        self.thread = None
 
     def start_installation(self):
         self.thread = InstallerThread(self.config, self.lang)
@@ -296,9 +298,10 @@ class InstallerUI(QWidget):
         self.back_button.setAccessibleDescription(self.lang["back button"])
 
     def on_back_clicked(self):
-        if hasattr(self, "thread") and self.thread.isRunning():
-            self.thread.stop()
-            self.thread.terminate()
+        if self.thread: 
+            if hasattr(self, "thread") and self.thread.isRunning():
+                self.thread.stop()
+                self.thread.terminate()
         self.back_clicked.emit()
 
     def on_installation_finished(self, success):
@@ -338,9 +341,10 @@ class InstallerUI(QWidget):
         sys.exit(0)
 
     def closeEvent(self, event):
-        if hasattr(self, "thread") and self.thread.isRunning():
-            self.thread.stop()
-            self.thread.terminate()
+        if self.thread:
+            if hasattr(self, "thread") and self.thread.isRunning():
+                self.thread.stop()
+                self.thread.terminate()
 
 class SelectLanguage(QWidget):
     language_selected = Signal(str)
@@ -510,7 +514,7 @@ class SelectModules(QWidget):
             cb.deleteLater()
         self.checkboxes.clear()
 
-        self.modules = [self.lang["voice module"], self.lang["slider module"]]
+        self.modules = [self.lang["voice module"]]
         for mod in self.modules:
             checkbox = QCheckBox(mod)
             checkbox.setAccessibleDescription(mod)
@@ -557,10 +561,6 @@ class SelectModules(QWidget):
         else:
             self.config.set("Modules", "voice", "false")
         
-        if self.lang["slider module"] in selected:
-            self.config.set("Modules", "slider", "true")
-        else:
-            self.config.set("Modules", "slider", "false")
         with open(config_path, "w") as configfile:
             self.config.write(configfile)
         self.modules_validated.emit(selected)
