@@ -9,7 +9,7 @@ Some older laptops may not be able to launch the AI model due to RAM requirement
 
 ## Installation 
 ```
-git clone https://github.com/AdrienPiechocki/Athena.git``
+git clone https://github.com/AdrienPiechocki/Athena.git
 cd Athena/
 ```
 ## Usage
