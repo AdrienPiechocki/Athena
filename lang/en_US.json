@@ -38,8 +38,7 @@
     "no browser defined": "No browser defined",
     
     "module selection":  "Which modules do you want Athena to use?",
-    "voice module": "Voice",
-    "slider module": "Slider",
+    "voice module": "Voice Command",
     "back button": "Back",
     "next button": "Next",
     "ask username": "How should Athena call you?",
