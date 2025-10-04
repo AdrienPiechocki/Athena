@@ -54,14 +54,23 @@ class InstallerThread(QThread):
         cmd_str = ' '.join(cmd) if isinstance(cmd, list) else cmd
         self.log_signal.emit(f"➡️ {self.lang['executing']} : {cmd_str}")
         try:
-            if "sudo" in cmd:
-                cmd[0] = "pkexec"
-            if silent:
-                subprocess.check_call(cmd, shell=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            else:
-                subprocess.check_call(cmd, shell=False)
-        except subprocess.CalledProcessError:
-            self.log_signal.emit(f"❌ {self.lang['exec error']} : {cmd_str}")
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            while True:
+                if not self._is_running:
+                    process.terminate()
+                    self.log_signal.emit("❌")
+                    return
+                output = process.stdout.readline()
+                if output == "" and process.poll() is not None:
+                    break
+                if output:
+                    self.log_signal.emit(output.strip())
+                    QThread.msleep(5)
+            if process.returncode != 0:
+                self.log_signal.emit(f"❌ {self.lang['exec error']} : {cmd_str}")
+        except Exception as e:
+            self.log_signal.emit(f"❌ {str(e)}")
+
 
     def progress_step(self, description, duration=2):
         steps = duration * 20
@@ -109,7 +118,7 @@ class InstallerThread(QThread):
                     if total_size:
                         percent = int(downloaded * 100 / total_size)
                         self.progress_signal.emit(percent)
-                        QApplication.processEvents()
+                        QThread.msleep(10)
 
         self.log_signal.emit(f"📦 {self.lang['vosk extraction']}...")
         with zipfile.ZipFile(local_zip, "r") as zip_ref:
@@ -165,20 +174,20 @@ class InstallerThread(QThread):
 
         self.progress_step(self.lang["package update"], 2)
         if pkg_manager == "apt":
-            self.run_command(["sudo", "apt", "update"])
+            self.run_command(["pkexec", "apt", "update"])
         elif pkg_manager == "pacman":
-            self.run_command(["sudo", "pacman", "-Sy"])
+            self.run_command(["pkexec", "pacman", "-Sy"])
         elif pkg_manager == "dnf":
-            self.run_command(["sudo", "dnf", "makecache"])
+            self.run_command(["pkexec", "dnf", "makecache"])
 
         self.progress_step(self.lang["packages installation"], 3)
         packages = ["flameshot", "wmctrl", "espeak-ng", "curl"]
         if pkg_manager == "apt":
-            self.run_command(["sudo", "apt", "install", "-y"] + packages)
+            self.run_command(["pkexec", "apt", "install", "-y"] + packages)
         elif pkg_manager == "pacman":
-            self.run_command(["sudo", "pacman", "-S", "--noconfirm"] + packages)
+            self.run_command(["pkexec", "pacman", "-S", "--noconfirm"] + packages)
         elif pkg_manager == "dnf":
-            self.run_command(["sudo", "dnf", "install", "-y"] + packages)
+            self.run_command(["pkexec", "dnf", "install", "-y"] + packages)
 
         if not shutil.which("ollama"):
             self.run_command("curl -fsSL https://ollama.com/install.sh | sh", shell=True)

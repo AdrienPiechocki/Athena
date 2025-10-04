@@ -190,6 +190,7 @@ class ListenerUI(QWidget):
     def append_log(self, message):
         self.log.append(message)
         self.log.ensureCursorVisible()
+        self.log.verticalScrollBar().setValue(self.log.verticalScrollBar().maximum())
 
     def start_listening(self):
         self.start_button.setEnabled(False)
