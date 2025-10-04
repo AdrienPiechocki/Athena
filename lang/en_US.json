@@ -27,7 +27,7 @@
     "clicked": "clicked",
     "goodbye": "Goodbye",
     "cant find window": "Can't find window",
-    "install wmctrl": "Make sure wmctrl is installed",
+    "no wayland": "wmctrl does not work well on wayland",
     "focused": "Focused",
     "searching for": "I'm searching on the internet for",
     "no browser defined": "No browser defined",

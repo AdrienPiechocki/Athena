@@ -22,6 +22,7 @@ class Brain():
     log_dir = os.path.join("logs")
     os.makedirs(log_dir, exist_ok=True)
     log_file = os.path.join(log_dir, "history.log")
+    debug_file = os.path.join(log_dir, "debug.log")
     lang_dir = os.path.join(BASE_DIR, "lang")
     lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
     locale.setlocale(locale.LC_TIME, f'{config.get("General", "lang")}.UTF-8')
@@ -76,6 +77,10 @@ class Brain():
                 "role": "assistant",
                 "content": response
             })
+    
+    def debug_log(self, prompt, response):
+        with open(self.debug_file, 'a') as h:
+            h.write(f"{datetime.now()} PROMPT: {prompt} \n{datetime.now()} RESPONSE: {self.clean_think(response)} \n")
 
     def query_ollama(self, prompt):
         try:
@@ -92,7 +97,8 @@ class Brain():
             for chunk in response:
                 if hasattr(chunk, "message") and hasattr(chunk.message, "content"):
                     full_response += chunk.message.content
-
+            
+            self.debug_log(prompt, full_response)
             return full_response
 
         except Exception as e:

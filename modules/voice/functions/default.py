@@ -270,7 +270,7 @@ def set_focus(title):
 
         result = os.system(f'wmctrl -a "{title}"')
         if result != 0:
-            return f"{lang['cant find window']} '{title}'. {lang['install wmctrl']}."
+            return f"{lang['cant find window']} '{title}'. {lang['no wayland']}."
         else:
             return f"{lang['focused']} {title}"
     

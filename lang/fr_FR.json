@@ -27,7 +27,7 @@
     "clicked": "cliqué",
     "goodbye": "Aurevoir",
     "cant find window": "Impossible de trouver la fenêtre de",
-    "install wmctrl": "Veillez a avoir installé wmctrl",
+    "no wayland": "wmctrl ne fonctionne pas bien sur wayland",
     "focused": "Mise en avant de",
     "searching for": "Je recherche sur internet",
     "no browser defined": "Aucun navigateur défini",

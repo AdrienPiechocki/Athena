@@ -125,6 +125,12 @@
         "exec_windows": "",
         "aliases": ["obs studio"],
         "args": ""
-    } 
+    },
+    "spotify": {
+        "exec_linux": "com.spotify.Client",
+        "exec_windows": "",
+        "aliases": ["spotify", "musique"],
+        "args": ""
+    }
 }
 
