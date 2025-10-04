@@ -3,7 +3,8 @@
         "exec_linux": "firefox",
         "exec_windows": "C://Program Files/Mozilla Firefox/firefox.exe",
         "aliases": ["firefox", "navigateur", "browser", "internet"],
-        "args": ""
+        "args": "",
+        "browser": "https://duckduckgo.com/?q="
     },
     "blender": {
         "exec_linux": "blender",

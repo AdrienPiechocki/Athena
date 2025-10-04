@@ -30,6 +30,7 @@
     "install wmctrl": "Veillez a avoir installé wmctrl",
     "focused": "Mise en avant de",
     "searching for": "Je recherche sur internet",
+    "no browser defined": "Aucun navigateur défini",
 
     "module selection":  "Quels modules voulez vous qu'Athéna utilise ?",
     "voice module": "Voix",

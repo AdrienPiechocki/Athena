@@ -28,10 +28,6 @@ apps_file = os.path.join(BASE_DIR, "settings", "apps.json")
 with open(apps_file, 'r', encoding='utf-8') as f:
     ALLOWED_APPS = json.load(f)
 
-browser_file = os.path.join(BASE_DIR, "settings", "browser.json")
-with open(browser_file, 'r', encoding='utf-8') as f:
-    BROWSER = json.load(f)
-
 def run_application(app_name):
     global ALLOWED_APPS, lang, system
     app_name = app_name.lower()
@@ -312,17 +308,25 @@ def set_focus(title):
 
 
 def browse(subject):
-    global BROWSER, lang, system
+    global ALLOWED_APPS, lang, system
 
     cmd = None
-
-    if system == "Linux":
-        cmd = f"{BROWSER['exec_linux']}"
+    search_url = None
+    browser = None
+    for data in ALLOWED_APPS.values():
+        if "browser" in data.keys():
+            search_url = data["browser"]
+            if system == "Linux":
+                browser = data["exec_linux"]
+            else:
+                browser = data["exec_windows"]
+            break
+        
+    if search_url and browser:
+        research = subject.replace(" ", "+")
+        cmd = f"{browser} {search_url}{research}"
     else:
-        cmd = f"{BROWSER['exec_windows']}"
-
-    research = subject.replace(" ", "+")
-    cmd += f" {BROWSER['search_url']}{research}"
+        return lang["no browser defined"]
 
     try:
         exec_cmd = cmd.split(" ")
