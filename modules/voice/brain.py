@@ -67,17 +67,18 @@ class Brain():
             /no_think
             """)
         self.conversation_history = [{"role": "system", "content": (self.SYSTEM_PROMPT)}]
-        with open(self.log_file, 'a') as h:
-            h.write(f"{datetime.now()} [NEW SESSIONS STARTED] \n")
-
+        with open(self.log_file, 'a') as f:
+            f.write(f"{datetime.now()} [NEW SESSIONS STARTED] \n")
+        with open(self.debug_file, 'a') as f:
+            f.write(f"{datetime.now()} [NEW SESSIONS STARTED] \n")
 
     # ---------------------- FUNCTIONS ----------------------
 
     def update_history(self, prompt, response): 
 
         # add new info (from current session)
-        with open(self.log_file, 'a') as h:
-            h.write(f"{datetime.now()} PROMPT: {prompt} \n{datetime.now()} RESPONSE: {self.clean_think(response)} \n")
+        with open(self.log_file, 'a') as f:
+            f.write(f"{datetime.now()} PROMPT: {prompt} \n{datetime.now()} RESPONSE: {self.clean_think(response)} \n")
 
         self.conversation_history.append({
                 "role": "user",
@@ -90,8 +91,8 @@ class Brain():
             })
     
     def debug_log(self, prompt, response):
-        with open(self.debug_file, 'a') as h:
-            h.write(f"{datetime.now()} PROMPT: {prompt} \n{datetime.now()} RESPONSE: {self.clean_think(response)} \n")
+        with open(self.debug_file, 'a') as f:
+            f.write(f"{datetime.now()} PROMPT: {prompt} \n{datetime.now()} RESPONSE: {self.clean_think(response)} \n")
 
     def query_ollama(self, prompt):
         try:
