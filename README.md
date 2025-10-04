@@ -9,18 +9,8 @@ Some older laptops may not be able to launch the AI model due to RAM requirement
 
 ## Installation 
 
-### Linux
-(tested on Arch with GNOME 49)
-- ``pip install -r requrements.txt``
-- install ``flameshot`` to take screenshot for image recognition
-- install ``wmctrl`` to set focus on apps when asked to (does not work well with wayland)
-- install ``espeak-ng`` for text to speech
-- install ``ollama`` and pull ``qwen3``
-
-### Windows
-- ``pip install -r requrements.txt``
-- install ``espeak-ng`` for text to speech
-- install ``ollama`` and pull ``qwen3``
+``git clone https://github.com/AdrienPiechocki/Athena.git``
+``cd Athena/``
 
 ## Usage
 ``python main.py`` to run the app.
