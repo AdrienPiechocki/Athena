@@ -33,7 +33,6 @@ class ListenerThread(QThread):
     def __init__(self, lang):
         super().__init__()
         self.lang = lang
-        self.cancel = False
 
     def run(self):
         try:
@@ -74,11 +73,11 @@ class ListenerThread(QThread):
     def audio_callback(self, indata, frames, time_info, status):
         if status:
             self.log_signal.emit(f"⚠️ {status}")
-        if not self.cancel:
+        if not self.brain.cancel:
             self.q.put(bytes(indata))
 
     def recognize_loop(self):
-        while not self.cancel:
+        while not self.brain.cancel:
             try:
                 data = self.q.get(timeout=0.1)
             except queue.Empty:

@@ -35,8 +35,8 @@ class Brain():
     log_file = os.path.join(log_dir, "history.log")
     debug_file = os.path.join(log_dir, "debug.log")
     lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
-    locale.setlocale(locale.LC_TIME, f'{config.get("General", "lang")}.UTF-8')
     def __init__(self, log_signal=None):
+        locale.setlocale(locale.LC_TIME, f'{self.config.get("General", "lang")}.UTF-8')
         self.log_signal = log_signal
         self.use_logging = False
         self.use_speaker = False
