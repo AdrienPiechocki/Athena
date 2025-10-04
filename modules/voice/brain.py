@@ -10,19 +10,20 @@ import sys
 sys.path.append(os.path.dirname(__file__))
 from .functions import *
 import locale
+import __main__
 
 
-def resource_path(relative_path):
+def resource_path(relative_path: str) -> str:
     try:
         base_path = sys._MEIPASS
     except AttributeError:
-        base_path = os.path.dirname(os.path.abspath(__file__))
+        base_path = os.path.dirname(os.path.abspath(getattr(__main__, '__file__', sys.argv[0])))
     return os.path.join(base_path, relative_path)
 
 config_path = resource_path("settings/config.cfg")
 lang_dir = resource_path("lang")
 data_dir = resource_path("data")
-log_dir = ressource_path("logs")
+log_dir = resource_path("logs")
 
 class Brain():
     cancel = False
@@ -35,7 +36,8 @@ class Brain():
     debug_file = os.path.join(log_dir, "debug.log")
     lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
     locale.setlocale(locale.LC_TIME, f'{config.get("General", "lang")}.UTF-8')
-    def __init__(self):
+    def __init__(self, log_signal=None):
+        self.log_signal = log_signal
         self.use_logging = False
         self.use_speaker = False
         self.hotword = ""
@@ -170,6 +172,6 @@ class Brain():
 
     def log(self, result):
         if self.use_logging:
-            print(f"🤖 {result}")
+            self.log_signal.emit(f"🤖 {result}")
         if self.use_speaker:
             self.speaker.say(result)

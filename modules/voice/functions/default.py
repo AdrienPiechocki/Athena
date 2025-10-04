@@ -10,18 +10,19 @@ import difflib
 import os
 import platform
 import sys
+import __main__
 
-def resource_path(relative_path):
+def resource_path(relative_path: str) -> str:
     try:
         base_path = sys._MEIPASS
     except AttributeError:
-        base_path = os.path.dirname(os.path.abspath(__file__))
+        base_path = os.path.dirname(os.path.abspath(getattr(__main__, '__file__', sys.argv[0])))
     return os.path.join(base_path, relative_path)
 
 config_path = resource_path("settings/config.cfg")
 lang_dir = resource_path("lang")
 data_dir = resource_path("data")
-log_dir = ressource_path("logs")
+log_dir = resource_path("logs")
 apps_path = resource_path("settings/apps.json")
 
 config = configparser.ConfigParser()

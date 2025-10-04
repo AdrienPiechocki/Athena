@@ -15,12 +15,13 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QThread, Signal, QSize, Qt, QTimer
 from PySide6.QtGui import QFont, QIcon
+import __main__
 
-def resource_path(relative_path):
+def resource_path(relative_path: str) -> str:
     try:
         base_path = sys._MEIPASS
     except AttributeError:
-        base_path = os.path.dirname(os.path.abspath(__file__))
+        base_path = os.path.dirname(os.path.abspath(getattr(__main__, '__file__', sys.argv[0])))
     return os.path.join(base_path, relative_path)
 
 config_path = resource_path("settings/config.cfg")

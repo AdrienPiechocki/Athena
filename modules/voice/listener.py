@@ -1,106 +1,192 @@
-import sounddevice as sd
-import queue
+import os
+import sys
 import json
 import time
-import sys
-from .brain import Brain
-from vosk import Model, KaldiRecognizer, SetLogLevel
+import queue
 import configparser
-import os
+import sounddevice as sd
+from vosk import Model, KaldiRecognizer, SetLogLevel
+from PySide6.QtCore import QThread, Signal, Qt, QTimer
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTextEdit, QPushButton, QMessageBox
+from .brain import Brain
+import __main__
 
-def resource_path(relative_path):
+
+def resource_path(relative_path: str) -> str:
     try:
         base_path = sys._MEIPASS
     except AttributeError:
-        base_path = os.path.dirname(os.path.abspath(__file__))
+        base_path = os.path.dirname(os.path.abspath(getattr(__main__, '__file__', sys.argv[0])))
     return os.path.join(base_path, relative_path)
+
 
 config_path = resource_path("settings/config.cfg")
 lang_dir = resource_path("lang")
 data_dir = resource_path("data")
-log_dir = ressource_path("logs")
+log_dir = resource_path("logs")
 
-class Listener():
-    
-    SetLogLevel(-1)
+class ListenerThread(QThread):
+    log_signal = Signal(str)
+    finished_signal = Signal(bool)
 
-    config = configparser.ConfigParser()
-    config.read(config_path)
+    def __init__(self, lang):
+        super().__init__()
+        self.lang = lang
+        self.cancel = False
 
-    lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
-    with open(lang_file, 'r', encoding='utf-8') as f:
-        lang = json.load(f)
+    def run(self):
+        try:
+            SetLogLevel(-1)
+            config = configparser.ConfigParser()
+            config.read(config_path)
+            model_path = config.get("Voice", "vosk", fallback=False)
 
-    def __init__(self):
-        
-        print(f"{self.lang['starting']}...")
+            if not model_path or not os.path.exists(model_path):
+                self.log_signal.emit(f"❌ {self.lang['no AI']}")
+                self.finished_signal.emit(False)
+                return
 
-        self.model = Model(self.config.get("Voice", "vosk", fallback=False))
-        self.vosk_rate = 48000
-        self.q = queue.Queue()
+            self.brain = Brain(log_signal=self.log_signal)
+            self.hotword = self.brain.hotword
+            self.speaker = self.brain.speaker
+            self.q = queue.Queue()
 
-        self.brain = Brain()
+            self.model = Model(model_path)
+            self.recognizer = KaldiRecognizer(self.model, 48000)
 
-        self.name = self.brain.name
-        self.hotword = self.brain.hotword
-        self.speaker = self.brain.speaker
+            self.log_signal.emit(self.lang["say Athena"])
+            self.stream = sd.RawInputStream(
+                samplerate=48000,
+                blocksize=8000,
+                dtype="int16",
+                channels=1,
+                callback=self.audio_callback
+            )
+            self.stream.start()
 
-        self.stream = None
-        self.main()
-        
+            self.recognize_loop()
+
+        except Exception as e:
+            self.log_signal.emit(f"❌ {str(e)}")
+            self.finished_signal.emit(False)
+
     def audio_callback(self, indata, frames, time_info, status):
         if status:
-            print(f"⚠️ {status}")
-        if not self.brain.cancel:
+            self.log_signal.emit(f"⚠️ {status}")
+        if not self.cancel:
             self.q.put(bytes(indata))
 
-    def recognize_loop(self, recognizer, q):
-        while not self.brain.cancel:
+    def recognize_loop(self):
+        while not self.cancel:
             try:
-                data = q.get(timeout=0.1)
+                data = self.q.get(timeout=0.1)
             except queue.Empty:
                 continue
-            result_ok = recognizer.AcceptWaveform(data)
-            if result_ok:
-                result = json.loads(recognizer.Result())
+
+            if self.recognizer.AcceptWaveform(data):
+                result = json.loads(self.recognizer.Result())
                 text = result.get("text", "").strip().lower()
                 if text:
-                    if self.hotword in text:
+                    if self.hotword and self.hotword in text:
+                        self.log_signal.emit(f"🗣️ {text}")
                         self.speaker.stop()
-                        print(f"🗣️ {text}")
                         self.brain.agent_loop(text)
 
-    def run_session(self):
-        self.recognizer = KaldiRecognizer(self.model, self.vosk_rate)
-        self.brain.cancel = False
-
-        print(self.lang["say Athena"])
-
-        self.stream = sd.RawInputStream(samplerate=self.vosk_rate, blocksize=8000, dtype='int16',
-                                channels=1, callback=self.audio_callback)
-        self.stream.start()
-
-        self.recognize_loop(self.recognizer, self.q)
-
-        if self.brain.cancel:
-            self.end()
-        else:
-            time.sleep(0.1)
+        self.end()
 
     def end(self):
-        print(self.lang["stop Athena"])
-        if self.stream:
+        if hasattr(self, "stream") and self.stream:
             self.stream.stop()
             self.stream.close()
-        sys.exit(0)
+        self.finished_signal.emit(True)
 
-    def main(self):
-        try:
-            while True:
-                if self.hotword:
-                    self.run_session()
-                else:
-                    print(self.lang["no AI"])
-                    sys.exit(0)
-        except KeyboardInterrupt:
-            self.end()
+
+class ListenerUI(QWidget):
+
+    def __init__(self):
+        super().__init__()
+
+        self.config = configparser.ConfigParser()
+        self.config.read(config_path)
+        self.lang = {}
+        self.load_language()
+
+        layout = QVBoxLayout()
+
+        self.label = QLabel(f"<h2>{self.lang['listener title']}</h2>")
+        layout.addWidget(self.label)
+
+        self.log = QTextEdit()
+        self.log.setReadOnly(True)
+        layout.addWidget(self.log)
+
+        self.start_button = QPushButton(self.lang["start listening"])
+        self.start_button.clicked.connect(self.start_listening)
+        layout.addWidget(self.start_button)
+
+        self.stop_button = QPushButton(self.lang["stop listening"])
+        self.stop_button.clicked.connect(self.stop_listening)
+        layout.addWidget(self.stop_button)
+
+        self.setLayout(layout)
+
+        self.listener_thread = None
+
+        # Style
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #000000;
+                color: #FFFF00;
+                font-family: Arial, sans-serif;
+            }
+            QLabel {
+                padding: 15px;
+            }
+            QPushButton {
+                background-color: #0000FF;
+                color: #FFFFFF;
+                border: 3px solid #FFFFFF;
+                border-radius: 8px;
+                padding: 15px;
+            }
+            QPushButton:hover {
+                background-color: #1E90FF;
+            }
+            QTextEdit {
+                background-color: #111111;
+                color: #00FF00;
+                border: 2px solid #FFFFFF;
+            }
+        """)
+
+    def load_language(self):
+        lang_code = self.config.get("General", "lang", fallback="en_US")
+        lang_file = os.path.join(lang_dir, f"{lang_code}.json")
+        with open(lang_file, "r", encoding="utf-8") as f:
+            self.lang = json.load(f)
+
+    def append_log(self, message):
+        self.log.append(message)
+        self.log.ensureCursorVisible()
+
+    def start_listening(self):
+        self.start_button.setEnabled(False)
+        self.append_log(self.lang["starting"])
+
+        self.listener_thread = ListenerThread(self.lang)
+        self.listener_thread.log_signal.connect(self.append_log)
+        self.listener_thread.finished_signal.connect(self.on_listening_finished)
+        self.listener_thread.start()
+
+    def stop_listening(self):
+        if self.listener_thread and self.listener_thread.isRunning():
+            self.listener_thread.cancel = True
+            self.append_log(self.lang["stop Athena"])
+            self.listener_thread.wait()
+
+    def closeEvent(self, event):
+        self.stop_listening()
+
+    def on_listening_finished(self, success):
+        self.start_button.setEnabled(True)
+        
