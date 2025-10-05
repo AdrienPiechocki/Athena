@@ -24,7 +24,7 @@
         "function": "press"
     },
     "restart": {
-        "prompt": "If the user asks you to restart an app, ONLY answer with : \nACTION: close <app_name> ACTION: open <app_name>",
+        "prompt": "If the user asks you to reopen an app, ONLY answer with : \nACTION: close <app_name> ACTION: open <app_name>",
         "function": ""
     },
     "focus": {

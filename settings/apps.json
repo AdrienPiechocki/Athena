@@ -6,6 +6,18 @@
         "args": "",
         "browser": "https://duckduckgo.com/?q="
     },
+    "twitch": {
+        "exec_linux": "firefox",
+        "exec_windows": "C://Program Files/Mozilla Firefox/firefox.exe",
+        "aliases": ["twitch"],
+        "args": "https://www.twitch.tv/directory/following"
+    },
+    "youtube": {
+        "exec_linux": "firefox",
+        "exec_windows": "C://Program Files/Mozilla Firefox/firefox.exe",
+        "aliases": ["youtube"],
+        "args": "https://www.youtube.com/feed/subscriptions"
+    },
     "blender": {
         "exec_linux": "blender",
         "exec_windows": "",

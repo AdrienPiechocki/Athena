@@ -66,7 +66,8 @@ class ListenerThread(QThread):
                 self.stream.start()
 
                 self.recognize_loop()
-
+            else:
+                self.end()
         except Exception as e:
             self.log_signal.emit(f"❌ {str(e)}")
             self.finished_signal.emit(False)
@@ -97,6 +98,7 @@ class ListenerThread(QThread):
 
     def end(self):
         self.speaker.stop()
+        self.log_signal.emit(self.lang["stop Athena"])
         if hasattr(self, "stream") and self.stream:
             self.stream.stop()
             self.stream.close()
@@ -206,7 +208,6 @@ class ListenerUI(QWidget):
         if self.listener_thread and self.listener_thread.isRunning():
             self.listener_thread.brain.cancel = True
             self.listener_thread.speaker.stop()
-            self.append_log(self.lang["stop Athena"])
             self.listener_thread.wait()
             self.start_button.setEnabled(True)
 

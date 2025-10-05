@@ -38,7 +38,6 @@ with open(apps_path, 'r', encoding='utf-8') as f:
     ALLOWED_APPS = json.load(f)
 
 def run_application(app_name):
-    global ALLOWED_APPS, lang, system
     app_name = app_name.lower()
 
     if system == "Linux":
@@ -109,7 +108,6 @@ def run_application(app_name):
         return f"{lang['app']} {app_name} {lang['not authorized']}."
 
 def close_application(app_name):
-    global ALLOWED_APPS, lang, system
     app_name = app_name.lower()
 
     if system == "Linux":
@@ -180,100 +178,94 @@ def close_application(app_name):
 
 
 def get_time():
-    global lang
     now = datetime.now()
     current_time = now.strftime("%H:%M")
     return f"{lang['time']} {current_time}."
 
 def get_day():
-    global lang
     now = datetime.today()
     current_time = now.strftime("%A %d %B %Y")
     return f"{lang['day']} {current_time}."
 
 def terminate(cancel_callback):
-    global lang, name
     cancel_callback()
     return f"{lang['goodbye']} {name}"
 
 def press(place):
-    global lang
-
-    # -----------------------------
-    # Screenshot
-    # -----------------------------
-    screenshot_path = os.path.join(os.getcwd(), "screen.png")
-    if os.path.exists(screenshot_path):
-        os.remove(screenshot_path)
-
     system = platform.system()
 
     try:
+        # -----------------------------
+        # Capture d'écran (en mémoire)
+        # -----------------------------
         if system == "Linux":
-            # Linux -> flameshot
-            subprocess.run(["flameshot", "full", "--path", screenshot_path], check=True)
+            result = subprocess.run(
+                ["flameshot", "full", "--raw"],
+                stdout=subprocess.PIPE,
+                check=True
+            )
+            image_data = result.stdout  # Données PNG brutes
         elif system == "Windows":
-            # Windows -> pyautogui
-            img = pyautogui.screenshot()
-            img.save(screenshot_path)
+            screen_img = pyautogui.screenshot()
+            img_byte_arr = io.BytesIO()
+            screen_img.save(img_byte_arr, format="PNG")
+            image_data = img_byte_arr.getvalue()
         else:
             return f"{lang['screenshot not supported']} ({system})"
-    except Exception:
-        return lang["flameshot error"] if system == "Linux" else lang["screenshot error"]
 
-    if not os.path.exists(screenshot_path):
-        return lang["screenshot not found"]
+        # Décodage direct en image OpenCV
+        np_arr = np.frombuffer(image_data, np.uint8)
+        screen = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        if screen is None:
+            return lang["screenshot unreadable"]
 
-    time.sleep(0.2)
+        # -----------------------------
+        # Lecture du template
+        # -----------------------------
+        template_path = f"./modules/voice/images/{place.lower()}.png"
+        template = cv2.imread(template_path)
+        if template is None:
+            return lang["patern unreadable"]
 
-    # -----------------------------
-    # Load images with OpenCV
-    # -----------------------------
-    screen = cv2.imread(screenshot_path)
-    if screen is None:
-        os.remove(screenshot_path)
-        return lang["screenshot unreadable"]
+        # -----------------------------
+        # Multi-scale Template Matching
+        # -----------------------------
+        threshold = 0.9
+        found = None
 
-    template_path = f"./modules/voice/images/{place.lower()}.png"
-    template = cv2.imread(template_path)
-    if template is None:
-        os.remove(screenshot_path)
-        return lang["patern unreadable"]
+        for scale in np.linspace(0.01, 1.0, 50):  # 1% à 100%
+            resized = cv2.resize(template, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+            h, w = resized.shape[:2]
 
-    # -----------------------------
-    # Multi-scale Template Matching
-    # -----------------------------
-    threshold = 0.9
-    found = None
+            if h > screen.shape[0] or w > screen.shape[1]:
+                continue
 
-    for scale in np.linspace(0.01, 1.0):  # 1% à 100%
-        resized = cv2.resize(template, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
-        h, w = resized.shape[:2]
+            result = cv2.matchTemplate(screen, resized, cv2.TM_CCOEFF_NORMED)
+            _, max_val, _, max_loc = cv2.minMaxLoc(result)
 
-        if h > screen.shape[0] or w > screen.shape[1]:
-            continue
+            if max_val > threshold:
+                found = (max_val, max_loc, (w, h))
+                break
 
-        result = cv2.matchTemplate(screen, resized, cv2.TM_CCOEFF_NORMED)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+        # -----------------------------
+        # Clic si trouvé
+        # -----------------------------
+        if found:
+            _, top_left, (w, h) = found
+            center_x = top_left[0] + w // 2
+            center_y = top_left[1] + h // 2
+            pyautogui.click(center_x, center_y)
+            result_msg = f"{place} {lang['clicked']}."
+        else:
+            result_msg = f"{place} {lang['not found']}."
 
-        if max_val > threshold:
-            found = (max_val, max_loc, (w, h))
-            break
+        return result_msg
 
-    if found:
-        max_val, top_left, (w, h) = found
-        center_x = top_left[0] + w // 2
-        center_y = top_left[1] + h // 2
-        pyautogui.click(center_x, center_y)
-        result = f"{place} {lang['clicked']}."
-    else:
-        result = f"{place} {lang['not found']}."
+    except Exception as e:
+        return lang.get("screenshot error", str(e))
 
-    os.remove(screenshot_path)
-    return result
 
 def set_focus(title):
-    global lang, system
 
     if system == "Linux":
 
@@ -317,8 +309,6 @@ def set_focus(title):
 
 
 def browse(subject):
-    global ALLOWED_APPS, lang, system
-
     cmd = None
     search_url = None
     browser = None
