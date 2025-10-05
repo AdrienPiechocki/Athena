@@ -99,7 +99,7 @@ class Brain():
             self.conversation_history.append({"role": "user", "content": prompt})
             
             response = ollama.chat(
-                model="qwen3",
+                model="gemma3n",
                 messages=self.conversation_history,
                 stream=True
             )

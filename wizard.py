@@ -133,30 +133,10 @@ class InstallerThread(QThread):
         self.progress_signal.emit(100)
 
 
-    def install_requirements_venv(self):
-        venv_dir = os.path.join(BASE_DIR, ".venv")
-        venv_python = os.path.join(venv_dir, "bin", "python") if os.name != "nt" else os.path.join(venv_dir, "Scripts", "python.exe")
-        venv_pip = [venv_python, "-m", "pip"]
-
-        if not os.path.exists(venv_dir):
-            self.log_signal.emit(f"🧩 {self.lang['venv creation']}")
-            self.run_command([sys.executable, "-m", "venv", venv_dir])
-        else:
-            self.log_signal.emit(f"🔄 {self.lang['venv update']}")
-
-        self.run_command(venv_pip + ["install", "--upgrade", "pip"])
-
-        requirements = os.path.join(BASE_DIR, "requirements.txt")
-        if os.path.exists(requirements):
-            self.progress_step(self.lang["python install"], 2)
-            self.run_command(venv_pip + ["install", "--upgrade", "-r", requirements])
-        else:
-            self.log_signal.emit(f"⚠️ {self.lang['no requirements found']}")
-
     def install_ollama_model(self):
         if shutil.which("ollama"):
-            self.progress_step(self.lang["qwen3 install"], 3)
-            self.run_command(["ollama", "pull", "qwen3"])
+            self.progress_step(self.lang["gemma3n install"], 3)
+            self.run_command(["ollama", "pull", "gemma3n"])
         else:
             self.log_signal.emit(f"⚠️ {self.lang['ollama not found']}")
 
@@ -214,7 +194,6 @@ class InstallerThread(QThread):
                 self.log_signal.emit(f"❌ {self.lang['wrong system']} : {self.system}")
                 return
 
-            self.install_requirements_venv()
             if self.config.get("General", "lang", fallback="en_US") == "en_US":
                 self.vosk_url = "https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip"
 

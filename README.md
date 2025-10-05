@@ -14,9 +14,21 @@ This means you will be able to access your whole computer via Athena (mouse, key
 Some older laptops may not be able to launch the AI model due to RAM requirements...
 
 ## Installation 
+### Linux
 ```
 git clone https://github.com/AdrienPiechocki/Athena.git
 cd Athena/
+python -m venv .venv/
+.venv/bin/python install --upgrade pip
+.venv/bin/python install --upgrade -r requirements.txt
+```
+### Windows
+```
+git clone https://github.com/AdrienPiechocki/Athena.git
+cd Athena/
+python -m venv .venv/
+.venv/Scripts/python.exe install --upgrade pip
+.venv/Scripts/python.exe install --upgrade -r requirements.txt
 ```
 ## Usage
 Launch with :
