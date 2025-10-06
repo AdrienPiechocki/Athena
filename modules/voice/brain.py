@@ -33,7 +33,6 @@ class Brain():
     name = config.get('General', 'username', fallback="").capitalize()
     os.makedirs(log_dir, exist_ok=True)
     log_file = os.path.join(log_dir, "history.log")
-    debug_file = os.path.join(log_dir, "debug.log")
     lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
     with open(actions_path, 'r', encoding='utf-8') as f:
         actions_file = json.load(f)
@@ -62,14 +61,12 @@ class Brain():
         self.SYSTEM_PROMPT += textwrap.dedent("""
             If the user asks multiple actions at once, ONLY answer with :
             ACTION: <action_1> ACTION: <action_2> ACTION: ...
+            If the user asks for a taks you can't perform, explain you can't do it.
             Else, answer normaly and simply (one sentence or two).
             Don't use emojis.
-            /no_think
             """)
         self.conversation_history = [{"role": "system", "content": (self.SYSTEM_PROMPT)}]
         with open(self.log_file, 'a') as f:
-            f.write(f"{datetime.now()} [NEW SESSIONS STARTED] \n")
-        with open(self.debug_file, 'a') as f:
             f.write(f"{datetime.now()} [NEW SESSIONS STARTED] \n")
 
     # ---------------------- FUNCTIONS ----------------------
@@ -78,7 +75,7 @@ class Brain():
 
         # add new info (from current session)
         with open(self.log_file, 'a') as f:
-            f.write(f"{datetime.now()} PROMPT: {prompt} \n{datetime.now()} RESPONSE: {self.clean_think(response)} \n")
+            f.write(f"{datetime.now()} PROMPT: {prompt} \n{datetime.now()} RESPONSE: {response} \n")
 
         self.conversation_history.append({
                 "role": "user",
@@ -89,10 +86,6 @@ class Brain():
                 "role": "assistant",
                 "content": response
             })
-    
-    def debug_log(self, prompt, response):
-        with open(self.debug_file, 'a') as f:
-            f.write(f"{datetime.now()} PROMPT: {prompt} \n{datetime.now()} RESPONSE: {self.clean_think(response)} \n")
 
     def query_ollama(self, prompt):
         try:
@@ -110,21 +103,11 @@ class Brain():
                 if hasattr(chunk, "message") and hasattr(chunk.message, "content"):
                     full_response += chunk.message.content
             
-            self.debug_log(prompt, full_response)
             return full_response
 
         except Exception as e:
             print(self.lang["ollama error"], e)
             self.cancel = True
-
-    def clean_think(self, ai_response_raw):
-        """
-        Supprime tout le bloc <think>...</think> du texte.
-        Retourne le texte nettoyé.
-        """
-        # Deletes all the <think>...</think> (multiline)
-        cleaned = re.sub(r"<think>.*?</think>", "", ai_response_raw, flags=re.DOTALL)
-        return cleaned.strip()
 
     def format_markdown(self, text: str) -> str:
         """
@@ -135,11 +118,8 @@ class Brain():
         return re.sub(r"\*(.*?)\*", r"\033[1m\1\033[0m", no_datetime_text)
 
     # ---------------------- MAIN LOOP ----------------------
-    def agent_loop(self, user_input:str):
-        ai_response_raw = self.query_ollama(user_input)
-        if not ai_response_raw:
-            return
-        ai_response = self.clean_think(ai_response_raw)
+    def agent_loop(self, user_input: str):
+        ai_response = self.query_ollama(user_input)
         if "ACTION:" in ai_response:
             ai_action = "ACTION:" + ai_response.split("ACTION:", 1)[-1]
             actions = re.findall(r"ACTION:\s*(.*?)(?=\s*ACTION:|$)", ai_action)

@@ -37,7 +37,7 @@ with open(lang_file, 'r', encoding='utf-8') as f:
 with open(apps_path, 'r', encoding='utf-8') as f:
     ALLOWED_APPS = json.load(f)
 
-def run_application(app_name):
+def run_application(app_name, *args):
     app_name = app_name.lower()
 
     if system == "Linux":
@@ -77,8 +77,8 @@ def run_application(app_name):
             exec_cmd = [cmd]
 
             # Add args if any
-            if data and "args" in data and data["args"].strip():
-                exec_cmd.extend(data["args"].split())
+            if args:
+                exec_cmd.extend([args])
             
             # Linux
             if system == "Linux":
@@ -182,10 +182,10 @@ def get_time():
     current_time = now.strftime("%H:%M")
     return f"{lang['time']} {current_time}."
 
-def get_day():
-    now = datetime.today()
-    current_time = now.strftime("%A %d %B %Y")
-    return f"{lang['day']} {current_time}."
+def get_date():
+    today = datetime.today()
+    current_date = today.strftime("%A %d %B %Y")
+    return f"{lang['day']} {current_date}."
 
 def terminate(cancel_callback):
     cancel_callback()

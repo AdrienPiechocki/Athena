@@ -3,146 +3,112 @@
         "exec_linux": "firefox",
         "exec_windows": "C://Program Files/Mozilla Firefox/firefox.exe",
         "aliases": ["firefox", "navigateur", "browser", "internet"],
-        "args": "",
         "browser": "https://duckduckgo.com/?q="
-    },
-    "twitch": {
-        "exec_linux": "firefox",
-        "exec_windows": "C://Program Files/Mozilla Firefox/firefox.exe",
-        "aliases": ["twitch"],
-        "args": "https://www.twitch.tv/directory/following"
-    },
-    "youtube": {
-        "exec_linux": "firefox",
-        "exec_windows": "C://Program Files/Mozilla Firefox/firefox.exe",
-        "aliases": ["youtube"],
-        "args": "https://www.youtube.com/feed/subscriptions"
     },
     "blender": {
         "exec_linux": "blender",
         "exec_windows": "",
-        "aliases": ["blender"],
-        "args": ""
+        "aliases": ["blender"]
     },
     "audacity": {
         "exec_linux": "audacity",
         "exec_windows": "",
-        "aliases": ["audacity"],
-        "args": ""
+        "aliases": ["audacity"]
     },
     "unityhub": {
         "exec_linux": "unityhub",
         "exec_windows": "",
-        "aliases": ["unity hub", "unity"],
-        "args": ""
+        "aliases": ["unity hub", "unity"]
     },
     "nautilus": {
         "exec_linux": "nautilus",
         "exec_windows": "",
-        "aliases": ["nautilus", "dossiers", "files", "file explorer", "file manager"],
-        "args": ""
+        "aliases": ["nautilus", "dossiers", "files", "file explorer", "file manager"]
     },
     "gnome-maps": {
         "exec_linux": "gnome-maps",
         "exec_windows": "",
-        "aliases": ["gnome maps", "maps", "carte"],
-        "args": ""
+        "aliases": ["gnome maps", "maps", "carte"]
     },
     "gnome-contacts": {
         "exec_linux": "gnome-contacts",
         "exec_windows": "",
-        "aliases": ["gnome contacts", "contacts"],
-        "args": ""
+        "aliases": ["gnome contacts", "contacts"]
     },
     "gnome-calendar": {
         "exec_linux": "gnome-calendar",
         "exec_windows": "",
-        "aliases": ["gnome calendar", "calendar", "agenda", "calendrier"],
-        "args": ""
+        "aliases": ["gnome calendar", "calendar", "agenda", "calendrier"]
     },
     "gnome-calculator": {
         "exec_linux": "gnome-calculator",
         "exec_windows": "",
-        "aliases": ["gnome calculator", "calculator", "calculatrice"],
-        "args": ""
+        "aliases": ["gnome calculator", "calculator", "calculatrice"]
     },
     "steam": {
         "exec_linux": "steam",
         "exec_windows": "",
-        "aliases": ["steam"],
-        "args": ""
+        "aliases": ["steam"]
     },
     "lutris": {
         "exec_linux": "lutris",
         "exec_windows": "",
-        "aliases": ["lutris"],
-        "args": ""
+        "aliases": ["lutris"]
     },
     "code": {
         "exec_linux": "code",
         "exec_windows": "",
-        "aliases": ["code", "visual studio", "visual studio code"],
-        "args": ""
+        "aliases": ["code", "visual studio", "visual studio code"]
     },
     "godot": {
         "exec_linux": "org.godotengine.Godot",
         "exec_windows": "",
-        "aliases": ["godot"],
-        "args": ""
+        "aliases": ["godot"]
     },
     "gimp": {
         "exec_linux": "org.gimp.GIMP",
         "exec_windows": "",
-        "aliases": ["gimp"],
-        "args": ""
+        "aliases": ["gimp"]
     },
     "krita": {
         "exec_linux": "org.kde.krita",
         "exec_windows": "",
-        "aliases": ["krita"],
-        "args": ""
+        "aliases": ["krita"]
     },
     "github-desktop": {
         "exec_linux": "io.github.shiftey.Desktop",
         "exec_windows": "",
-        "aliases": ["github", "github desktop"],
-        "args": ""
+        "aliases": ["github", "github desktop"]
     },
     "vesktop": {
         "exec_linux": "dev.vencord.Vesktop",
         "exec_windows": "",
-        "aliases": ["discord"],
-        "args": ""
+        "aliases": ["discord"]
     },
     "cartridges": {
         "exec_linux": "page.kramo.Cartridges",
         "exec_windows": "",
-        "aliases": ["games library", "jeux", "cartouches"],
-        "args": ""
+        "aliases": ["games library", "jeux", "cartouches"]
     },
     "obsidian": {
         "exec_linux": "md.obsidian.Obsidian",
         "exec_windows": "",
-        "aliases": ["obsidian"],
-        "args": ""
+        "aliases": ["obsidian"]
     },
     "mousam": {
         "exec_linux": "io.github.amit9838.mousam",
         "exec_windows": "",
-        "aliases": ["météo", "weather", "mousam"],
-        "args": ""
+        "aliases": ["météo", "weather", "mousam"]
     },
     "obs": {
         "exec_linux": "com.obsproject.Studio",
         "exec_windows": "",
-        "aliases": ["obs studio"],
-        "args": ""
+        "aliases": ["obs studio"]
     },
     "spotify": {
         "exec_linux": "com.spotify.Client",
         "exec_windows": "",
-        "aliases": ["spotify", "musique"],
-        "args": ""
+        "aliases": ["spotify", "musique"]
     }
 }
 
