@@ -11,6 +11,7 @@ import os
 import platform
 import sys
 import __main__
+from pynput.keyboard import Key, Controller
 
 def resource_path(relative_path: str) -> str:
     try:
@@ -351,3 +352,9 @@ def browse(subject):
         return f"{lang['searching for']} {subject}"
     except Exception as e:
         return e
+
+
+def write(text):
+    keyboard = Controller()
+    keyboard.type(text)
+    return "Voila"

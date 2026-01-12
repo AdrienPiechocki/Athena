@@ -34,5 +34,9 @@
     "browse": {
         "prompt": "If the user asks you to browse for something, answer with : \nACTION: browse <subject>",
         "function": "browse"
+    },
+    "write": {
+        "prompt": "You can write text by switching to write mode.\n If the user asks you to switch to write mode, answer with : \nACTION: write <prompt>",
+        "function": "write"
     }
 }

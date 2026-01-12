@@ -36,7 +36,7 @@ class Brain():
     lang_file = os.path.join(lang_dir, f"{config.get('General', 'lang', fallback='en_US')}.json")
     with open(actions_path, 'r', encoding='utf-8') as f:
         actions_file = json.load(f)
-        
+
     def __init__(self, log_signal=None):
         locale.setlocale(locale.LC_TIME, f'{self.config.get("General", "lang")}.UTF-8')
         self.log_signal = log_signal
